@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "noImplicitAny": false,
+        "outDir": "built",
+        "rootDir": "src",
+        "sourceMap": false
+    },
+    "exclude": [
+        "node_modules"
+    ],
+    "filesGlob": [
+        "./src/**/*.ts",
+        "./src/*.ts"
+    ],
+    "files": [
+        "./src/utils/kernelops.ts"
+    ]
+}

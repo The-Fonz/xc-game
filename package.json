@@ -1,0 +1,20 @@
+{
+  "name": "xc-game",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "tsconfig && tsc",
+    "test": "tsconfig && tsc && mocha",
+    "watch": "onchange './src/**/*.ts' './src/*.ts' -- npm test"
+  },
+  "dependencies": {
+    "three": "*"
+  },
+  "devDependencies": {
+    "benchmark": "*",
+    "mocha": "*",
+    "tsconfig-glob": "*",
+    "typescript": "*"
+  },
+  "private": true,
+  "license": "GPLV2"
+}
