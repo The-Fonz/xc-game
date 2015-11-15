@@ -5,16 +5,20 @@
 
 import vect = require("../utils/vect");
 
-export class Paraglider {
+class Paraglider {
   pos: vect.vec3D;
   spd: vect.vec3D;
 
   constructor(x:number, y:number, z:number) {
     this.pos = new vect.vec3D(x,y,z);
-    this.spd = new vect.vec3D(0,0,0);
+    this.spd = new vect.vec3D(.1,.1,0);
   }
   increment(dt:number) {
     // Only changes position, not spd
-    this.pos.add(vect.scale(this.spd, dt));
+    this.pos.x += this.spd.x * dt;
+    this.pos.y += this.spd.y * dt;
+    this.pos.z += this.spd.z * dt;
   }
 }
+
+export = Paraglider;

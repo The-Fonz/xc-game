@@ -15,9 +15,12 @@
         "./src/*.ts"
     ],
     "files": [
+        "./src/game-engine/engine.ts",
         "./src/game-engine/lift.ts",
         "./src/game-engine/paraglider.ts",
         "./src/game-engine/terrain.ts",
+        "./src/render/view2d.ts",
+        "./src/utils/input.ts",
         "./src/utils/kernelops.ts",
         "./src/utils/vect.ts"
     ]

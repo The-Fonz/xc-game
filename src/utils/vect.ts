@@ -27,8 +27,3 @@ export class vec3D {
                      Math.pow(this.z-v.z,2));
   }
 }
-
-// Is not part of the class because it does not modify the object
-export function scale(v:vec3D, dt:number):vec3D {
-  return new vec3D(v.x*dt, v.y*dt, v.z*dt);
-}

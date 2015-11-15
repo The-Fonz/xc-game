@@ -5,7 +5,7 @@
     "build": "tsconfig && tsc",
     "test": "mocha",
     "buildtest": "tsconfig && tsc && mocha",
-    "serve": "http-server"
+    "serve": "http-server -c-1"
   },
   "dependencies": {
     "three": "*"

@@ -4,13 +4,17 @@
   <script src="../require1k.js"></script>
   <script>
     // Asynchronously loads commonjs module and calls callback
-    R("../built/game-engine/terrain", function (err, terrain) {
+    R("../built/game-engine/terrain", function (err, Terrain) {
         if (err) {
             console.error(err.statusText);
             return;
         }
-        var t = new terrain.Terrain("../obj/sceneries/test1/test1.png");
-        t.loadHeightmapFromImage("../obj/sceneries/test1/test1.png", true);
+        var img = new Image();
+        img.style.display = "none";
+        img.onload = function() {
+          var t = new Terrain(img, true);
+        }
+        img.src = "../obj/sceneries/test1/test1.png";
     });
   </script>
 </head>
