@@ -3,14 +3,15 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsconfig && tsc",
-    "test": "tsconfig && tsc && mocha",
-    "watch": "onchange './src/**/*.ts' './src/*.ts' -- npm test"
+    "test": "mocha",
+    "buildtest": "tsconfig && tsc && mocha",
+    "serve": "http-server"
   },
   "dependencies": {
     "three": "*"
   },
   "devDependencies": {
-    "benchmark": "*",
+    "http-server": "*",
     "mocha": "*",
     "tsconfig-glob": "*",
     "typescript": "*"

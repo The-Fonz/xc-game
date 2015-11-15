@@ -1,0 +1,20 @@
+<html>
+<head>
+  <!-- Use require1k for module loading without having to bundle -->
+  <script src="../require1k.js"></script>
+  <script>
+    // Asynchronously loads commonjs module and calls callback
+    R("../built/game-engine/terrain", function (err, terrain) {
+        if (err) {
+            console.error(err.statusText);
+            return;
+        }
+        var t = new terrain.Terrain("../obj/sceneries/test1/test1.png");
+        t.loadHeightmapFromImage("../obj/sceneries/test1/test1.png", true);
+    });
+  </script>
+</head>
+<body>
+
+</body>
+</html>

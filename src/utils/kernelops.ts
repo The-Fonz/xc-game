@@ -2,7 +2,7 @@
  * Kernel operations like Sobel
  */
 
-// Takes kernel specified rows first
+// Kernel must be specified rows first
 export function kernel3x3(kernel, imarr:Uint16Array,
 	width:number, height:number):Uint16Array {
 
