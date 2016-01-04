@@ -6,6 +6,9 @@ class Terrain {
   heightmap: Uint8ClampedArray;
   height: number;
   width: number;
+  // Defines horizontal, vertical scale
+  hscale: number = 1;
+  vscale: number = 1;
 
   // Loads heightmap from image. Needs DOM
   constructor(img:HTMLImageElement, test:boolean = false) {

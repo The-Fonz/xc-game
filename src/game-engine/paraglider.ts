@@ -1,23 +1,21 @@
 /*
- * Paraglider logic, including collision avoidance and AI algorithms.
- * One class for both player and AI.
+ * Simple paraglider class
  */
 
-import vect = require("../utils/vect");
+/// <reference path="../utils/gl-matrix.d.ts" />
+import glm = require("gl-matrix");
 
 class Paraglider {
-  pos: vect.vec3D;
-  spd: vect.vec3D;
+  pos: Float32Array;
+  spd: Float32Array;
 
   constructor(x:number, y:number, z:number) {
-    this.pos = new vect.vec3D(x,y,z);
-    this.spd = new vect.vec3D(.1,.1,0);
+    this.pos = vec3.fromValues(x,y,z);
+    this.spd = vec3.fromValues(0,0,0);
   }
   increment(dt:number) {
     // Only changes position, not spd
-    this.pos.x += this.spd.x * dt;
-    this.pos.y += this.spd.y * dt;
-    this.pos.z += this.spd.z * dt;
+    vec3.add(this.pos, this.pos, this.spd);
   }
 }
 

@@ -1,27 +1,23 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es5",
         "noImplicitAny": false,
         "outDir": "built",
         "rootDir": "src",
-        "sourceMap": false
+        "sourceMap": true
     },
-    "exclude": [
-        "node_modules"
-    ],
     "filesGlob": [
-        "./src/**/*.ts",
-        "./src/*.ts"
+        "src/**/*.ts"
     ],
     "files": [
-        "./src/game-engine/engine.ts",
-        "./src/game-engine/lift.ts",
-        "./src/game-engine/paraglider.ts",
-        "./src/game-engine/terrain.ts",
-        "./src/render/view2d.ts",
-        "./src/utils/input.ts",
-        "./src/utils/kernelops.ts",
-        "./src/utils/vect.ts"
+        "src/exe/example-game-draw2d.ts",
+        "src/exe/example-heightmap-load.ts",
+        "src/game-engine/engine.ts",
+        "src/game-engine/lift.ts",
+        "src/game-engine/paraglider.ts",
+        "src/game-engine/terrain.ts",
+        "src/render/view2d.ts",
+        "src/utils/gl-matrix.d.ts",
+        "src/utils/input.ts"
     ]
 }

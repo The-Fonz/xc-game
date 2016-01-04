@@ -1,5 +1,5 @@
 /*
- * Takes care of updating entire environment model, including AI
+ * Takes care of updating entire environment model, includes AI
  */
 
 import Terrain = require("./terrain");
@@ -11,7 +11,7 @@ class Engine {
   paragliders: Paraglider[];
   lift: Lift;
 
-  constructor(terrain:Terrain, config:JSON) {
+  constructor(terrain:Terrain, config) {
     this.terrain = terrain;
     // Init lift and paragliders based on config
     var pglist = config['paragliders'];
@@ -28,8 +28,6 @@ class Engine {
       this.paragliders[i].increment(dt);
     }
   }
-
-  updatePlayer() {}
 }
 
 export = Engine;

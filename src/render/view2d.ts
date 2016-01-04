@@ -47,7 +47,7 @@ export class HeightmapView extends MapView {
     for (var i=0; i<l; i++) {
       var pg = this.engine.paragliders[i];
       this.ctx.beginPath();
-      this.ctx.arc(pg.pos.x, pg.pos.y, 2+pg.pos.z/20, 0, 2 * Math.PI, false);
+      this.ctx.arc(pg.pos[0], pg.pos[1], 2+pg.pos[2]/20, 0, 2 * Math.PI, false);
       this.ctx.fillStyle = 'red';
       this.ctx.fill();
     }

@@ -2,19 +2,27 @@
   "name": "xc-game",
   "version": "0.0.0",
   "scripts": {
-    "build": "tsconfig && tsc",
-    "test": "mocha",
-    "buildtest": "tsconfig && tsc && mocha",
+    "build": "tsconfig && tsc && globify --debug built/exe/*.js --outfile=built/bundle.js",
+    "watch": "npm-watch",
     "serve": "http-server -c-1"
   },
+  "watch": {
+    "build": {
+      "patterns": "src/**/*.ts",
+      "extensions": "ts"
+    }
+  },
   "dependencies": {
+    "gl-matrix-vec3": "^2.2.1-npm",
     "three": "*"
   },
   "devDependencies": {
+    "gl-matrix": "*",
     "http-server": "*",
-    "mocha": "*",
     "tsconfig-glob": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "globify": "*",
+    "npm-watch": "*"
   },
   "private": true,
   "license": "GPLV2"
