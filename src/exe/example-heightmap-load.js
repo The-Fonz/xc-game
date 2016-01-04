@@ -1,6 +1,6 @@
 // Entry point for heightmap load example
 
-import Terrain = require("../game-engine/terrain");
+import {Terrain} from '../game-engine/terrain';
 
 if (document.body.id === "heightmap-load") {
   var img = new Image();

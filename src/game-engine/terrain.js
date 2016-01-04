@@ -2,16 +2,9 @@
  * Terrain class
  */
 
-class Terrain {
-  heightmap: Uint8ClampedArray;
-  height: number;
-  width: number;
-  // Defines horizontal, vertical scale
-  hscale: number = 1;
-  vscale: number = 1;
-
+export class Terrain {
   // Loads heightmap from image. Needs DOM
-  constructor(img:HTMLImageElement, test:boolean = false) {
+  constructor(img, test = false) {
     // Make new canvas
     var canvas = document.createElement("canvas");
     var ctx = canvas.getContext('2d');
@@ -41,5 +34,3 @@ class Terrain {
     }
   }
 }
-
-export = Terrain;

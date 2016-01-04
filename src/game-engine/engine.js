@@ -2,16 +2,11 @@
  * Takes care of updating entire environment model, includes AI
  */
 
-import Terrain = require("./terrain");
-import Paraglider = require("./paraglider");
-import Lift = require("./lift");
+import {Terrain} from "./terrain";
+import {Paraglider} from "./paraglider";
 
-class Engine {
-  terrain: Terrain;
-  paragliders: Paraglider[];
-  lift: Lift;
-
-  constructor(terrain:Terrain, config) {
+export class Engine {
+  constructor(terrain, config) {
     this.terrain = terrain;
     // Init lift and paragliders based on config
     var pglist = config['paragliders'];
@@ -22,12 +17,10 @@ class Engine {
     }
   }
 
-  update(dt:number):void {
+  update(dt) {
     // Update paragliders
     for (var i=0; i<this.paragliders.length; i++) {
       this.paragliders[i].increment(dt);
     }
   }
 }
-
-export = Engine;

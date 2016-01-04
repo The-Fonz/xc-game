@@ -2,16 +2,11 @@
  *
  */
 
-import Engine = require("../game-engine/engine");
+import {Engine} from "../game-engine/engine";
 
 // Base class for 2D canvas views
-class MapView {
-  engine: Engine;
-  canvasWidth: number;
-  canvasHeight: number;
-  ctx: CanvasRenderingContext2D;
-
-  constructor(engine: Engine, canvas:HTMLCanvasElement) {
+export class MapView {
+  constructor(engine, canvas) {
     this.engine = engine;
     this.canvasHeight = canvas.height;
     this.canvasWidth = canvas.width;
@@ -20,8 +15,6 @@ class MapView {
 }
 
 export class HeightmapView extends MapView {
-  imageData: ImageData;
-
   constructor(e,c) {
     super(e,c);
     this.imageData = this.ctx.getImageData(0,0,this.canvasWidth,this.canvasHeight);
@@ -37,12 +30,12 @@ export class HeightmapView extends MapView {
     }
   }
 
-  update():void {
+  update() {
     this.drawHeightmap();
     this.drawParagliders();
   }
 
-  drawParagliders():void {
+  drawParagliders() {
     var l = this.engine.paragliders.length;
     for (var i=0; i<l; i++) {
       var pg = this.engine.paragliders[i];
@@ -53,10 +46,7 @@ export class HeightmapView extends MapView {
     }
   }
 
-  drawHeightmap():void {
+  drawHeightmap() {
     this.ctx.putImageData(this.imageData,0,0);
   }
 }
-
-export class LiftView {}
-export class VarioView {}

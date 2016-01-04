@@ -2,26 +2,23 @@
   "name": "xc-game",
   "version": "0.0.0",
   "scripts": {
-    "build": "tsconfig && tsc && globify --debug built/exe/*.js --outfile=built/bundle.js",
+    "build": "globify --debug src/exe/*.js -o bundle.js -t babelify",
     "watch": "npm-watch",
     "serve": "http-server -c-1"
   },
   "watch": {
-    "build": {
-      "patterns": "src/**/*.ts",
-      "extensions": "ts"
-    }
+    "build": "src/**/*.js"
   },
   "dependencies": {
     "gl-matrix-vec3": "^2.2.1-npm",
     "three": "*"
   },
   "devDependencies": {
+    "babel-preset-es2015": "*",
+    "babelify": "*",
     "gl-matrix": "*",
-    "http-server": "*",
-    "tsconfig-glob": "*",
-    "typescript": "*",
     "globify": "*",
+    "http-server": "*",
     "npm-watch": "*"
   },
   "private": true,
