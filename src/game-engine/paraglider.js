@@ -2,7 +2,7 @@
  * Simple paraglider class
  */
 
-import {vec3} from "gl-matrix";
+import vec3 from "gl-matrix-vec3";
 
 export class Paraglider {
   constructor(x, y, z) {

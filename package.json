@@ -2,24 +2,20 @@
   "name": "xc-game",
   "version": "0.0.0",
   "scripts": {
-    "build": "globify --debug src/exe/*.js -o bundle.js -t babelify",
-    "watch": "npm-watch",
-    "serve": "http-server -c-1"
-  },
-  "watch": {
-    "build": "src/**/*.js"
+    "build": "browserify  --debug src/main.js -o bundle.js -t babelify",
+    "watch": "watchify -v --debug src/main.js -o bundle.js -t babelify",
+    "serve": "http-server -c-1 -o"
   },
   "dependencies": {
-    "gl-matrix-vec3": "^2.2.1-npm",
+    "gl-matrix-vec3": "*",
     "three": "*"
   },
   "devDependencies": {
     "babel-preset-es2015": "*",
+    "browserify": "*",
+    "watchify": "*",
     "babelify": "*",
-    "gl-matrix": "*",
-    "globify": "*",
-    "http-server": "*",
-    "npm-watch": "*"
+    "http-server": "*"
   },
   "private": true,
   "license": "GPLV2"
