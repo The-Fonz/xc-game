@@ -22,13 +22,18 @@ export class Engine {
   update(dt) {
     // Update first paraglider's speed, which is player
     var k = this.input.pressedKeys;
+
     var p = this.paragliders[0];
+
     if (k["Left"]) p.steer(-.08);
     else if (k["Right"]) p.steer(.08);
     else p.steer(0);
+
     // Update paragliders
     for (var i=0; i<this.paragliders.length; i++) {
-      this.paragliders[i].increment(dt);
+      var p = this.paragliders[i];
+      p.avoidTerrain(this.terrain);
+      p.increment(dt);
     }
   }
 }

@@ -9,7 +9,7 @@ import {HeightmapView} from './render/view2d';
 // Entry point for 2d example
 if (document.body.id === "game-draw2d") {
   var config = {"paragliders": [
-    {x:100, y:100, z:200},
+    {x:100, y:100, z:130},
   ]};
 
   var img = new Image();
@@ -21,7 +21,8 @@ if (document.body.id === "game-draw2d") {
     var hmcanv = document.getElementById("heightmap");
     hmcanv.width = img.width;
     hmcanv.height = img.height;
-    var hmv = new HeightmapView(e, hmcanv);
+    var stats = document.getElementById("stats");
+    var hmv = new HeightmapView(e, hmcanv, stats);
     var time = 0;
     var f = function(timestamp) {
       if (time===0) time = timestamp;
