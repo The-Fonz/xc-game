@@ -20,14 +20,24 @@ export class Engine {
   }
 
   update(dt) {
-    // Update first paraglider's speed, which is player
+
+    var player = this.paragliders[0];
+
     var k = this.input.pressedKeys;
 
-    var p = this.paragliders[0];
+    // Steer during coming frame
+    if (k["Left"]) player.steer(-1);
+    else if (k["Right"]) player.steer(1);
+    else player.steer(0);
 
-    if (k["Left"]) p.steer(-.08);
-    else if (k["Right"]) p.steer(.08);
-    else p.steer(0);
+    // Delete keypress to avoid rapid speedups/downs
+    if (k["Down"]) {
+      delete k["Down"];
+      player.changeSpeed(-1);
+    } else if (k["Up"]) {
+      delete k["Up"];
+      player.changeSpeed(1);
+    }
 
     // Update paragliders
     for (var i=0; i<this.paragliders.length; i++) {
