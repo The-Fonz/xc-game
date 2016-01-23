@@ -4,9 +4,6 @@
 
 import {Engine} from "../game-engine/engine";
 
-// Remove later, only for testing
-import vec3 from "gl-matrix-vec3";
-
 // Base class for 2D canvas views
 export class MapView {
 
@@ -72,33 +69,21 @@ export class HeightmapView extends MapView {
       this.ctx.strokeStyle = 'red';
       this.ctx.stroke();
 
-      // Get gradient and draw it
-      var g = vec3.create();
-      var pos = this.engine.paragliders[i].pos;
-      this.engine.terrain.getGradient(g, pos);
-
+      // Draw gradient at probe location
       this.ctx.beginPath();
-      this.ctx.moveTo(pg.pos[0] + pg.spd[0], pg.pos[1] + pg.spd[1]);
-      this.ctx.lineTo(pg.pos[0] + pg.spd[0] + g[0], pg.pos[1] + pg.spd[1] + g[1]);
+      this.ctx.moveTo(pg._probe[0], pg._probe[1]);
+      this.ctx.lineTo(pg._probe[0] + pg._grad[0],
+                      pg._probe[1] + pg._grad[1]);
       this.ctx.strokeStyle = 'blue';
       this.ctx.stroke();
-
-      // Calculate left or right turn
-      var lr = vec3.create();
-      vec3.cross(lr, g, pg.spd);
-      lr = lr[2] < 0 ? "right" : "left";
-
-      // Get terrain height
-      var h = vec3.create();
-      this.engine.terrain.getHeight(h, pg.pos);
 
       // By convention, first pg is player
       if (i === 0) this.stats.innerHTML = `xyz: ${Math.round(pg.pos[0])}
                                                 ${Math.round(pg.pos[1])}
                                                 ${Math.round(pg.pos[2])}
-                                        height: ${h[2]}
-                                      gradient: ${g[0]} ${g[1]}
-                                   terrain c/a: ${lr}`;
+                                        height: ${pg._agl}
+                                probe gradient: ${pg._grad[0]} ${pg._grad[1]}
+         terrain c/a: ${pg._lr[2] < 0 ? "right" : "left"}`;
     }
   }
 

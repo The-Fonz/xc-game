@@ -2,7 +2,7 @@
   "name": "xc-game",
   "version": "0.0.0",
   "scripts": {
-    "build": "browserify  --debug src/main.js -o bundle.js -t babelify",
+    "build": "browserify src/main.js -t babelify | uglifyjs --compress --output bundle.js",
     "watch": "watchify -v --debug src/main.js -o bundle.js -t babelify",
     "serve": "http-server -c-1 -o"
   },

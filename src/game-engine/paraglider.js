@@ -2,12 +2,23 @@
  * Simple paraglider class
  */
 
+
 import vec3 from "gl-matrix-vec3";
 import mat3 from "gl-matrix-mat3";
+
 
 export class Paraglider {
 
   constructor(x, y, z) {
+
+    // Position in (virtual) m
+    this.pos = vec3.fromValues(x,y,z);
+    // Initialize speed vector even though it is recreated each increment
+    this.spd = vec3.create();
+    // Direction in rad, 0 is east
+    this.direction = 0;
+    // Left with normal turnrate is -1, right 1, center 0
+    this.turn  = 0;
 
     // Performance properties
     this.perf = {
@@ -16,52 +27,84 @@ export class Paraglider {
       // Forward speeds in m/s
       fwdspds  : [10, 14, 18],
       // Sink rates in m/s
-      sinkrates: [ 1, 14/8.5, 18/7],
+      sinkrates: [ -0, -14/8.5, -18/7],
       // Turn rate in rad/s
-      turnrates: [ 4, 2, 1]
+      turnrates: [ 5, 2, 1]
     }
-
-    this.pos = vec3.fromValues(x,y,z);
-
-    this.spd = vec3.fromValues(10,0,0);
-    // Creates new identity matrix
-    this.steerm = mat3.create();
   }
+
 
   increment(dt) {
-    // Speed vector needs normalization at some point.
-    // Can do that by normalizing, then multiplying by size of hor+vert velocity vect
-    // Also take dt into account when steering!
-    vec3.transformMat3(this.spd, this.spd, this.steerm);
-    vec3.scaleAndAdd(this.pos, this.pos, this.spd, dt);
+
+    // Change direction if steering
+    this.direction += dt * this.turn * this.perf.turnrates[this.perf.spdstate];
+
+    // Remember current speed for trapezoidal integration later on
+    this._cachespd = vec3.clone(this.spd);
+
+    // Calculate speed vector anew each time. Bonus: avoids normalization
+    var spd = this.perf.fwdspds[this.perf.spdstate];
+    this.spd = vec3.fromValues(
+      Math.cos(this.direction) * spd,
+      Math.sin(this.direction) * spd,
+      this.perf.sinkrates[this.perf.spdstate]);
+
+    // Calculate speed vector using trapezoidal rule
+    vec3.lerp(this._cachespd, this._cachespd, this.spd, .5);
+
+    vec3.scaleAndAdd(this.pos, this.pos, this._cachespd, dt);
   }
 
-  // Steer with radial speed
+
+  // Left with normal turnrate is -1, right 1, center 0
   steer(theta) {
-    this.steerm[0] =   Math.cos(theta);
-    this.steerm[3] = - Math.sin(theta);
-    this.steerm[1] =   Math.sin(theta);
-    this.steerm[4] =   Math.cos(theta);
+    this.turn = theta;
   }
+
+
+  // Change speed state, positive is increase, anything else means decrease
+  changeSpeed(posneg) {
+    if (posneg > 0) {
+      this.perf.spdstate = Math.min(this.perf.spdstate + 1,
+                                    this.perf.fwdspds.length - 1);
+    } else {
+      this.perf.spdstate = Math.max(this.perf.spdstate - 1, 0);
+    }
+  }
+
 
   // Function to check if landed
+
 
   // Terrain collision avoidance
   avoidTerrain(terrain) {
     // Use cache to avoid object creation
-    this.th = vec3.create();
-    this.g  = vec3.create();
-    this.lr = vec3.create();
+    this._agl   = vec3.create();
+    this._grad  = vec3.create();
+    this._lr    = vec3.create();
+    this._probe = vec3.create();
 
-    terrain.getHeight(this.th, this.pos);
+    // Extend collision probe in front of pilot
+    this._probe = vec3.normalize(this._probe, this.spd);
+    // Scale by turn radius, which is spd/turnrate, multiply by margin
+    vec3.scale(this._probe, this._probe,
+            this.perf.fwdspds[this.perf.spdstate] /
+            this.perf.turnrates[this.perf.spdstate] *
+            1.4);
+    // Get probe absolute location
+    this._probe = vec3.add(this._probe, this.pos, this._probe);
+
+    terrain.getHeight(this._agl, this._probe);
 
     // Steer away from terrain
-    if (this.pos[2] < this.th[2]) {
-      terrain.getGradient(this.g, this.pos);
-      vec3.cross(this.lr, this.g, this.spd);
-      this.lr = this.lr[2] < 0 ? this.steer(.08) : this.steer(-.08);
+    if (this._probe[2] < this._agl[2]) {
+      terrain.getGradient(this._grad, this._probe);
+      vec3.cross(this._lr, this._grad, this.spd);
+
+      this._lr[2] < 0 ? this.steer(1) : this.steer(-1);
     }
   }
+
 
   avoidPilots(pglist) {}
 
