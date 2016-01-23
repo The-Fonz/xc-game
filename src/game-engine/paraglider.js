@@ -2,8 +2,10 @@
  * Simple paraglider class
  */
 
+
 import vec3 from "gl-matrix-vec3";
 import mat3 from "gl-matrix-mat3";
+
 
 export class Paraglider {
 
@@ -95,8 +97,8 @@ export class Paraglider {
     terrain.getHeight(this._agl, this._probe);
 
     // Steer away from terrain
-    if (this.pos[2] < this._agl[2]) {
-      terrain.getGradient(this._grad, this.pos);
+    if (this._probe[2] < this._agl[2]) {
+      terrain.getGradient(this._grad, this._probe);
       vec3.cross(this._lr, this._grad, this.spd);
 
       this._lr[2] < 0 ? this.steer(1) : this.steer(-1);
