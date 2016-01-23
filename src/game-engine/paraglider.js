@@ -15,6 +15,8 @@ export class Paraglider {
     this.pos = vec3.fromValues(x,y,z);
     // Initialize speed vector even though it is recreated each increment
     this.spd = vec3.create();
+    // Vector to store absolute airmass movement
+    this.airmovement = vec3.create();
     // Direction in rad, 0 is east
     this.direction = 0;
     // Left with normal turnrate is -1, right 1, center 0
@@ -27,7 +29,7 @@ export class Paraglider {
       // Forward speeds in m/s
       fwdspds  : [10, 14, 18],
       // Sink rates in m/s
-      sinkrates: [ -0, -14/8.5, -18/7],
+      sinkrates: [ -10/10, -14/8.5, -18/7],
       // Turn rate in rad/s
       turnrates: [ 5, 2, 1]
     }
@@ -52,9 +54,10 @@ export class Paraglider {
     // Calculate speed vector using trapezoidal rule
     vec3.lerp(this._cachespd, this._cachespd, this.spd, .5);
 
+    // Add airspeed, then add absolute airmass movement
     vec3.scaleAndAdd(this.pos, this.pos, this._cachespd, dt);
+    vec3.scaleAndAdd(this.pos, this.pos, this.airmovement, dt);
   }
-
 
   // Left with normal turnrate is -1, right 1, center 0
   steer(theta) {
@@ -62,18 +65,17 @@ export class Paraglider {
   }
 
 
-  // Change speed state, positive is increase, anything else means decrease
+  // Speed up or down, 0 means go back to trimspeed
   changeSpeed(posneg) {
     if (posneg > 0) {
       this.perf.spdstate = Math.min(this.perf.spdstate + 1,
                                     this.perf.fwdspds.length - 1);
-    } else {
+    } else if (posneg < 0) {
       this.perf.spdstate = Math.max(this.perf.spdstate - 1, 0);
+    } else {
+      this.perf.spdstate = 0;
     }
   }
-
-
-  // Function to check if landed
 
 
   // Terrain collision avoidance
@@ -84,8 +86,10 @@ export class Paraglider {
     this._lr    = vec3.create();
     this._probe = vec3.create();
 
-    // Extend collision probe in front of pilot
-    this._probe = vec3.normalize(this._probe, this.spd);
+    // Point collision probe in direction of groundspeed
+    vec3.add(this._probe, this.spd, this.airmovement);
+    vec3.normalize(this._probe, this._probe);
+
     // Scale by turn radius, which is spd/turnrate, multiply by margin
     vec3.scale(this._probe, this._probe,
             this.perf.fwdspds[this.perf.spdstate] /
@@ -98,6 +102,8 @@ export class Paraglider {
 
     // Steer away from terrain
     if (this._probe[2] < this._agl[2]) {
+      // Go back to trimspeed
+      this.changeSpeed(0);
       terrain.getGradient(this._grad, this._probe);
       vec3.cross(this._lr, this._grad, this.spd);
 

@@ -45,6 +45,7 @@ export class HeightmapView extends MapView {
   update() {
     this.drawHeightmap();
     this.drawParagliders();
+    this.drawLift();
   }
 
   drawParagliders() {
@@ -55,9 +56,8 @@ export class HeightmapView extends MapView {
 
       var pg = this.engine.paragliders[i];
 
-      this.ctx.beginPath();
-
       // Draw circle where pg is
+      this.ctx.beginPath();
       this.ctx.arc(pg.pos[0], pg.pos[1], 3, 0, 2 * Math.PI, false);
       this.ctx.fillStyle = 'red';
       this.ctx.fill();
@@ -89,5 +89,20 @@ export class HeightmapView extends MapView {
 
   drawHeightmap() {
     this.ctx.putImageData(this.imageData, 0, 0);
+  }
+
+  drawLift() {
+    var ths = this.engine.lift.thermals;
+
+    for (var i=0; i<ths.length; i++) {
+      var th = ths[i];
+      // Draw dashed circle where thermal is
+      this.ctx.beginPath();
+      this.ctx.setLineDash([5]);
+      this.ctx.arc(th.pos[0], th.pos[1], th.radius, 0, 2 * Math.PI, false);
+      this.ctx.strokeStyle = 'green';
+      this.ctx.stroke();
+      this.ctx.setLineDash([0]);
+    }
   }
 }

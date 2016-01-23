@@ -3,12 +3,14 @@
  */
 
 import {Terrain} from "./terrain";
+import {Lift} from "./lift";
 import {Paraglider} from "./paraglider";
 import {Input} from "../utils/input";
 
 export class Engine {
   constructor(terrain, config) {
     this.terrain = terrain;
+    this.lift = new Lift(this.terrain);
     this.input = new Input();
     // Init lift and paragliders based on config
     var pglist = config['paragliders'];
@@ -39,9 +41,14 @@ export class Engine {
       player.changeSpeed(1);
     }
 
+    this.lift.increment(dt);
+
     // Update paragliders
     for (var i=0; i<this.paragliders.length; i++) {
       var p = this.paragliders[i];
+
+      this.lift.air(p.airmovement, p.pos);
+
       p.avoidTerrain(this.terrain);
       p.increment(dt);
     }

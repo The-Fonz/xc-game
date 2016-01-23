@@ -9,7 +9,7 @@ import {HeightmapView} from './render/view2d';
 // Entry point for 2d example
 if (document.body.id === "game-draw2d") {
   var config = {"paragliders": [
-    {x:100, y:100, z:130},
+    {x:500, y:500, z:200},
   ]};
 
   var img = new Image();
