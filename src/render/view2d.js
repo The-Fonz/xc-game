@@ -4,9 +4,6 @@
 
 import {Engine} from "../game-engine/engine";
 
-// Remove later, only for testing
-import vec3 from "gl-matrix-vec3";
-
 // Base class for 2D canvas views
 export class MapView {
 

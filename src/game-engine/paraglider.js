@@ -37,15 +37,20 @@ export class Paraglider {
     // Change direction if steering
     this.direction += dt * this.turn * this.perf.turnrates[this.perf.spdstate];
 
-    var spd = this.perf.fwdspds[this.perf.spdstate];
+    // Remember current speed for trapezoidal integration later on
+    this._cachespd = vec3.clone(this.spd);
 
     // Calculate speed vector anew each time. Bonus: avoids normalization
+    var spd = this.perf.fwdspds[this.perf.spdstate];
     this.spd = vec3.fromValues(
       Math.cos(this.direction) * spd,
       Math.sin(this.direction) * spd,
       this.perf.sinkrates[this.perf.spdstate]);
 
-    vec3.scaleAndAdd(this.pos, this.pos, this.spd, dt);
+    // Calculate speed vector using trapezoidal rule
+    vec3.lerp(this._cachespd, this._cachespd, this.spd, .5);
+
+    vec3.scaleAndAdd(this.pos, this.pos, this._cachespd, dt);
   }
 
 
