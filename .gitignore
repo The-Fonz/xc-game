@@ -39,3 +39,7 @@ node_modules
 
 # Bundle
 bundle.js
+
+*.ignore.*
+
+*.pyc

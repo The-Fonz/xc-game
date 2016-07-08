@@ -12,8 +12,8 @@ export class Engine {
     var pglist = config['paragliders'];
     this.paragliders = [];
     for (var i=0; i<pglist.length; i++) {
-      var pg = pglist[i];
-      this.paragliders.push(new Paraglider(pg.x, pg.y, pg.z));
+      var pos = pglist[i].position;
+      this.paragliders.push(new Paraglider(pos.x, pos.y, pos.z));
     }
   }
 

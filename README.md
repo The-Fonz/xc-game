@@ -1,6 +1,3 @@
-## License
-This open-source code is licensed under the GNU GENERAL PUBLIC LICENSE Version 2, see `LICENSE.txt`.
-
 ## Folder structure
 - `examples` contains HTML pages that visualize parts of the underlying algorithms, these visualizations can be used to tweak variables (e.g. cloud growth, thermal probability)
 - `obj` contains all scenery and paraglider models
