@@ -7,10 +7,7 @@
     "serve": "http-server -c-1 -o"
   },
   "dependencies": {
-    "axiom": "^0.1.6",
-    "gl-matrix-vec3": "*",
-    "three": "*",
-    "zepto": "^1.0.1"
+    "three": "*"
   },
   "devDependencies": {
     "babel-preset-es2015": "*",

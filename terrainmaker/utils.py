@@ -4,6 +4,7 @@
 
 from __future__ import division
 import numpy as np
+import json
 
 def delaunay_to_heightmap(vertices, faces):
     pass
@@ -12,7 +13,7 @@ def delaunay_to_heightmap(vertices, faces):
     # Interpolate with http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.LinearNDInterpolator.html
     # Save as img
 
-def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF):
+def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscale=1):
     o = terrainfilter.outputs[0]
     vertices = o.points.to_array()
     # Contains leading 3's for each triangle
@@ -23,17 +24,12 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF):
     vertices[:,1] = vertices[:,2]
     vertices[:,2] = -y
 
-    # SRTM has 30m resolution
-    vertices[:,(0,2)] *= 30
-
     # Zero height at lowest point
     vertices[:,1] -= vertices[:,1].min()
 
-    # Triangle with face color, see three.js json version 3 format
-    facecode = 0b01000000
-
     faces = faces.reshape((len(faces)//4, 4))
-    faces[:,0] = facecode
+    # Triangle with face color, see three.js json version 3 format
+    faces[:,0] = 0b01000000
 
     # Generate colors with avg elevation of face
     gety = lambda vi: vertices[vi,1]
@@ -54,20 +50,25 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF):
     faces = faces.flatten()
     faces = faces.astype(int)
 
-    return TEMPL % (list(vertices.flatten()), list(faces), colors)
+    o = {
+        # Special xcgame metadata
+        "xcgame": {
+            "heightmap": 0,
+            "hscale": float(hscale),
+            "vscale": float(vscale),
+        },
+        # From here it's all standard Tthreejs JSON format
+        "metadata": { "formatVersion" : 3 },
 
-TEMPL = u"""\
-{
-    "metadata": { "formatVersion" : 3 },
+        "scale": 1.0,
 
-    "scale": 1.0,
+        "vertices": list(vertices.flatten()),
 
-    "vertices": %s,
+        "faces": list(faces),
 
-    "faces": %s,
+        "colors": colors,
 
-    "colors": %s,
+        "normals": []
+    }
 
-    "normals": []
-}
-"""
+    return json.dumps(o, indent=1)

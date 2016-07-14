@@ -16,6 +16,7 @@ def cf(hgt):
     return int(r*255) << 16 | int(g*255) << 8 | int(b*255)
 
 if __name__=="__main__":
-    terrjs = utils.terrain_to_json(terrain, colorfunc=cf)
+    # Terrain is sampled at 30m intervals, exaggerate height with factor 3
+    terrjs = utils.terrain_to_json(terrain, colorfunc=cf, hscale=30, vscale=3)
     with open('grandcanyon.ignore.json', 'w') as f:
         f.write(terrjs)

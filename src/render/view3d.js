@@ -7,95 +7,66 @@ import * as THREE from "three";
 
 export class ThreeDeeView {
   constructor(engine, sceneryjson) {
+    window.THREE = THREE;
+    window.tdv = this;
+
     this.engine = engine;
 
-    var scene, camera, renderer;
-    var geometry, material, mesh;
+    this.scene = new THREE.Scene();
 
-    init(sceneryjson);
-    animate();
+  	this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+    this.camera.position.x = 2000;
+    this.camera.position.y = 2000;
+  	this.camera.position.z = 2E3;
+    this.camera.lookAt(new THREE.Vector3(0,0,0));
 
-    function init(sceneryjson) {
+  	this.renderer = new THREE.WebGLRenderer();
+  	this.renderer.setSize( window.innerWidth, window.innerHeight );
 
-    	scene = new THREE.Scene();
+    // SCATTERED LIGHT
+    var light = new THREE.HemisphereLight( 0x67B5DD, 0xC7B071, 1 );
+    this.scene.add( light );
 
-    	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-      camera.position.x = 2000;
-      camera.position.y = 2000;
-    	camera.position.z = 2000;
+    // SUN
+    var directionalLight = new THREE.DirectionalLight( 0xFAFF95, 1 );
+    directionalLight.position.set( 0, 1, 0 );
+    this.scene.add( directionalLight );
 
-      camera.lookAt(new THREE.Vector3(0,0,0));
+    // instantiate a loader
+    var loader = new THREE.JSONLoader();
 
-    	geometry = new THREE.BoxGeometry( 200, 200, 200 );
-    	material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+    let loaded = loader.parse(sceneryjson);
+    console.log(loaded);
 
-    	mesh = new THREE.Mesh( geometry, material );
-    	scene.add( mesh );
+    var mtl = new THREE.MeshStandardMaterial( { color: 0xFFFFFF, vertexColors: THREE.FaceColors, roughness: 0.55, metalness: 0.5 } )
 
-    	renderer = new THREE.WebGLRenderer();
-    	renderer.setSize( window.innerWidth, window.innerHeight );
+    var scenerymesh = new THREE.Mesh( loaded.geometry, mtl );
 
-      // SCATTERED LIGHT
-      var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
-      scene.add( light );
+    // TODO: Get config from geometry obj
+    let hscale = sceneryjson.xcgame.hscale;
+    let vscale = sceneryjson.xcgame.vscale;
+    scenerymesh.scale.set(hscale, vscale, hscale);
+    this.scene.add( scenerymesh );
 
-      // SUN
-      // var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-      // directionalLight.position.set( 0, 1, 0 );
-      // scene.add( directionalLight );
-
-      // instantiate a loader
-      var loader = new THREE.JSONLoader();
-
-      // TODO: Use loader.parse to load the json
-
-      // load a resource
-      loader.load(
-      	// resource URL
-      	'../terrainmaker/grandcanyon.ignore.json',
-      	// Function when resource is loaded
-      	function ( geometry ) {
-          var mtl = new THREE.MeshStandardMaterial( { color: 0x000000, vertexColors: THREE.FaceColors, roughness: 0.55, metalness: 0.5 } )
-      		var object = new THREE.Mesh( geometry, mtl );
-          object.scale.set(1,3,1);
-      		scene.add( object );
-          document.o = object;
-      	}
-      );
-
-    	document.body.appendChild( renderer.domElement );
-
-    }
-
-    function animate() {
-
-    	requestAnimationFrame( animate );
-
-    	mesh.rotation.x += 0.01;
-    	mesh.rotation.y += 0.02;
-
-    	renderer.render( scene, camera );
-
-    }
+  	document.body.appendChild( this.renderer.domElement );
   }
 
-  update() {
-    this.drawHeightmap();
-    this.drawParagliders();
+  render() {
+    this.renderer.render( this.scene, this.camera );
   }
 
-  drawParagliders() {
-    var l = this.engine.paragliders.length;
-    for (var i=0; i<l; i++) {
-      var pg = this.engine.paragliders[i];
-      this.ctx.beginPath();
-      this.ctx.arc(pg.pos[0], pg.pos[1], 2+pg.pos[2]/20, 0, 2 * Math.PI, false);
-      this.ctx.fillStyle = 'red';
-      this.ctx.fill();
-    }
-  }
-
-  drawHeightmap() {
-    this.ctx.putImageData(this.imageData,0,0);
+  processinput(keymap, dt) {
+    let rotationspeed = dt;
+    // Reuse vectors for speed (object creation is costly)
+    // if (! this.pieul ) this.pieul = new THREE.Euler();
+    let i = keymap.status;
+    let l = i.a;
+    let r = i.d;
+    let u = i.w;
+    let d = i.s;
+    // undefined becomes 0
+    // this.pieul.set(0, l || -r, 0, 'XYZ');
+    if ( l || -r)
+      this.camera.rotation.x += l || -r;
   }
 }
