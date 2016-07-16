@@ -4,16 +4,27 @@
 
 from __future__ import division
 import numpy as np
+from scipy import interpolate as spip
+import matplotlib.pyplot as plt
 import json
 
+
 def delaunay_to_heightmap(vertices, faces):
-    pass
     # Convert to delaunay triangulation scipy format
     # Make grid where to interpolate (or take as arg)
+    xmin = vertices[:,0].min()
+    xmax = vertices[:,0].max()
+    zmin = vertices[:,2].min()
+    zmax = vertices[:,2].max()
+    print("Generating grid on [{}:{},{}:{}]".format(xmin,xmax,zmin,zmax))
+    evalpts = np.array([ (i,j) for j in np.arange(zmin,xmax) for i in np.arange(xmin,xmax) ])
     # Interpolate with http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.LinearNDInterpolator.html
-    # Save as img
+    points = vertices[:,[0,2]]
+    values = vertices[:,1]
+    out = spip.griddata(points, values, evalpts, method='linear')
+    return out.reshape((int(xmax-xmin-1),int(zmax-zmin)))
 
-def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscale=1):
+def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscale=1, outputheightmap=True):
     o = terrainfilter.outputs[0]
     vertices = o.points.to_array()
     # Contains leading 3's for each triangle
@@ -50,10 +61,19 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscal
     faces = faces.flatten()
     faces = faces.astype(int)
 
+    heightmap = delaunay_to_heightmap(vertices, faces)
+    # Normalize heightmap to 0-255 and remember vscale to resize later
+    heightmapvscale = heightmap.max() / 255
+    print("heightmapvscale {:.2f}".format(heightmapvscale))
+    heightmap /= heightmapvscale
+    heightmap = heightmap.round()
+
     o = {
         # Special xcgame metadata
         "xcgame": {
-            "heightmap": 0,
+            "heightmap": 0, # TODO: add encoded heightmap
+            "heightmapvscale": heightmapvscale,
+            # hscale is the same for heightmap and geometry
             "hscale": float(hscale),
             "vscale": float(vscale),
         },
@@ -71,4 +91,5 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscal
         "normals": []
     }
 
-    return json.dumps(o, indent=1)
+
+    return json.dumps(o, indent=1), heightmap
