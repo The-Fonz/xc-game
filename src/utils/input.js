@@ -12,6 +12,8 @@ const KEYS = {
   83: 's',
   68: 'd',
   87: 'w',
+  70: 'f',
+  86: 'v',
   // Spacebar
   " ": 32,
 }
@@ -26,7 +28,7 @@ export class KeyMap {
         this.status[keymapsto] = setto;
       }
     }
-    
+
     window.addEventListener('keydown', (ev)=>{processkey(ev.keyCode, true)});
     window.addEventListener('keyup', (ev)=>{processkey(ev.keyCode, false)});
   }

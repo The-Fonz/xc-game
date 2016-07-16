@@ -35,14 +35,12 @@ export class ThreeDeeView {
     // instantiate a loader
     var loader = new THREE.JSONLoader();
 
-    let loaded = loader.parse(sceneryjson);
-    console.log(loaded);
 
+    let loaded = loader.parse(sceneryjson);
     var mtl = new THREE.MeshStandardMaterial( { color: 0xFFFFFF, vertexColors: THREE.FaceColors, roughness: 0.55, metalness: 0.5 } )
 
     var scenerymesh = new THREE.Mesh( loaded.geometry, mtl );
 
-    // TODO: Get config from geometry obj
     let hscale = sceneryjson.xcgame.hscale;
     let vscale = sceneryjson.xcgame.vscale;
     scenerymesh.scale.set(hscale, vscale, hscale);
@@ -55,18 +53,36 @@ export class ThreeDeeView {
     this.renderer.render( this.scene, this.camera );
   }
 
-  processinput(keymap, dt) {
+  flyaround(keymap, dt) {
+    // Instantiate cache vars
+    if (this.flyaround.translatevect === undefined) {
+      this.flyaround.translatevect = new THREE.Vector3();
+      // Reorder once
+      this.camera.rotation.reorder('YZX');
+      console.info("Fly around with w,s,a,d,f,v and arrow keys");
+    }
     let rotationspeed = dt;
-    // Reuse vectors for speed (object creation is costly)
-    // if (! this.pieul ) this.pieul = new THREE.Euler();
+    let walkspeed = dt*1E3;
+
     let i = keymap.status;
-    let l = i.a;
-    let r = i.d;
-    let u = i.w;
-    let d = i.s;
-    // undefined becomes 0
-    // this.pieul.set(0, l || -r, 0, 'XYZ');
-    if ( l || -r)
-      this.camera.rotation.x += l || -r;
+
+    let l = Number(i.a||0 - i.d||0) * rotationspeed;
+    let u = Number(i.w||0 - i.s||0) * rotationspeed;
+    let fwd = Number(i.ArrowDown||0 - i.ArrowUp||0) * walkspeed;
+    let side = Number(i.ArrowRight||0 - i.ArrowLeft||0) * walkspeed;
+    let up = Number(i.f||0 - i.v||0) * walkspeed;
+
+    if ( l || u || fwd || side || up ) {
+      // Rotate around top axis (y) first and don't use roll (z)
+      this.camera.rotation.x += u;
+      this.camera.rotation.y += l;
+
+      this.flyaround.translatevect.set(side,0,fwd);
+
+      this.flyaround.translatevect.applyEuler(this.camera.rotation);
+      this.flyaround.translatevect.setY(up);
+
+      this.camera.position.add(this.flyaround.translatevect);
+    }
   }
 }

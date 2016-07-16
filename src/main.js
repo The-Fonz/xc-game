@@ -55,7 +55,7 @@ if (document.body.id === "terrain-load") {
         // e.processinput(km, dt);
         e.update(dt);
         // l("animating");
-        v.processinput(km, dt);
+        v.flyaround(km, dt);
         v.render();
       }
 
