@@ -12,10 +12,10 @@ import json
 def delaunay_to_heightmap(vertices, faces):
     # Convert to delaunay triangulation scipy format
     # Make grid where to interpolate (or take as arg)
-    xmin = vertices[:,0].min()
-    xmax = vertices[:,0].max()
-    zmin = vertices[:,2].min()
-    zmax = vertices[:,2].max()
+    xmin = vertices[:,0].min().round()
+    xmax = vertices[:,0].max().round()
+    zmin = vertices[:,2].min().round()
+    zmax = vertices[:,2].max().round()
     print("Generating grid on [{}:{},{}:{}]".format(xmin,xmax,zmin,zmax))
     evalpts = np.array([ (i,j) for j in np.arange(zmin,xmax) for i in np.arange(xmin,xmax) ])
     # Interpolate with http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.LinearNDInterpolator.html
@@ -37,6 +37,7 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscal
 
     # Zero height at lowest point
     vertices[:,1] -= vertices[:,1].min()
+
 
     faces = faces.reshape((len(faces)//4, 4))
     # Triangle with face color, see three.js json version 3 format
@@ -68,10 +69,15 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscal
     heightmap /= heightmapvscale
     heightmap = heightmap.round()
 
+    # Put origin at 0,0
+    vertices[:,0] -= vertices[:,0].min()
+    vertices[:,2] -= vertices[:,2].min()
+
     o = {
         # Special xcgame metadata
         "xcgame": {
-            "heightmap": 0, # TODO: add encoded heightmap
+            # Unencoded heightmap
+            "heightmap": heightmap.tolist(),
             "heightmapvscale": heightmapvscale,
             # hscale is the same for heightmap and geometry
             "hscale": float(hscale),
