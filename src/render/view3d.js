@@ -85,4 +85,29 @@ export class ThreeDeeView {
       this.camera.position.add(this.flyaround.translatevect);
     }
   }
+
+  // Makes boxes at all heightmap points
+  showHeightmap() {
+    // Makes
+    let t = this.engine.terrain;
+
+    let boxsize = t.hscale;
+    let hscale = t.hscale;
+    let vscale = t.vscale;
+
+    for (var i=0; i<t.heightmap.length; i++) {
+      for (var j=0; j<t.heightmap[0].length; j++) {
+        // Only render some
+        if (!(i%10)&&!(j%10)) {
+          let box = new THREE.BoxGeometry(boxsize,boxsize,boxsize);
+          let material = new THREE.MeshBasicMaterial({color: 0xFFFFFF});
+          let cube = new THREE.Mesh(box, material);
+          let height = t.heightmap[j][i];
+          height *= t.heightmapvscale * t.vscale
+          cube.position.set(i*hscale, height, j*hscale);
+          this.scene.add(cube);
+        }
+      }
+    }
+  }
 }

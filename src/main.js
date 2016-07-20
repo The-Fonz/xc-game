@@ -25,11 +25,18 @@ if (document.body.id === "terrain-load") {
     // Load terrain, engine, view (in that order)
     var km = new KeyMap();
     l("Building mountains...");
-    var t = new Terrain(json.xcgame.heightmap);
+    var t = new Terrain(json.xcgame.heightmap,
+      json.xcgame.hscale,
+      // Vertical scale of terrain mesh
+      json.xcgame.vscale,
+      // Heightmap multiplier, excludes vscale
+      json.xcgame.heightmapvscale);
     l("Retrieving vectors...");
     var e = new Engine(t, config);
     l("Generating triangles...");
     var v = new ThreeDeeView(e, json);
+
+    v.showHeightmap();
 
     l("Setting time interval...");
     var blur = false;
@@ -57,6 +64,7 @@ if (document.body.id === "terrain-load") {
         // l("animating");
         v.flyaround(km, dt);
         v.render();
+        console.info("GL: " + t.groundlevel(v.camera.position));
       }
 
       requestAnimationFrame(renderloop);
