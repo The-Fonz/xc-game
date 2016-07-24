@@ -2,11 +2,10 @@
  *
  */
 
-import {Engine} from "../game-engine/engine";
 import * as THREE from "three";
 
 export class ThreeDeeView {
-  constructor(engine, sceneryjson) {
+  constructor(engine, sceneryjson, config) {
     window.THREE = THREE;
     window.tdv = this;
 
@@ -14,7 +13,7 @@ export class ThreeDeeView {
 
     this.scene = new THREE.Scene();
 
-  	this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+  	this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, config.clippingplane );
     this.camera.position.x = 2000;
     this.camera.position.y = 2000;
   	this.camera.position.z = 2E3;
@@ -46,7 +45,23 @@ export class ThreeDeeView {
     scenerymesh.scale.set(hscale, vscale, hscale);
     this.scene.add( scenerymesh );
 
+    this.applyConfig(config);
+
   	document.body.appendChild( this.renderer.domElement );
+  }
+
+  applyConfig(config) {
+    if (config.fog)
+      this.scene.fog = new THREE.Fog(
+        config.fog.hex,
+        config.fog.near,
+        config.fog.far);
+    if (config.axishelper)
+      this.scene.add( new THREE.AxisHelper( config.axishelper ) );
+    if (config.clearcolor)
+      this.renderer.setClearColor(config.clearcolor);
+    if (config.showheightmap)
+      this.showHeightmap();
   }
 
   render() {

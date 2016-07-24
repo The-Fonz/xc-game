@@ -13,15 +13,33 @@ import {KeyMap} from './utils/input';
 // Entry point for terrain load example
 if (document.body.id === "terrain-load") {
   // Task config
-  var config = {"paragliders": [
-    {position: {x:100, y:100, z:200}},
-  ]};
+  var config = {
+    "paragliders": [
+      {position: {x:100, y:200, z:100}},
+    ],
+    "weather": {},
+    "task": {},
+    // "fog": {"hex": 0xFFFFFF, "near": 10, "far": 100},
+    "ThreeDeeView": {
+      "clippingplane": 3000,
+      "fog": {"hex": 0xFFFFFF, "near": 400, "far": 3000},
+      "showheightmap": true,
+      "axishelper": 3000,
+      "clearcolor": "white",
+    },
+  };
 
   l("Loading resources...");
 
-  let p = promiseGet("../terrainmaker/grandcanyon.ignore.json").then(JSON.parse);
+  promiseGet("../terrainmaker/grandcanyon.ignore.json")
+  .then(JSON.parse)
+  .then((json)=>{
+    let g = new Game(json, config);
+  });
+}
 
-  p.then((json)=>{
+class Game {
+  constructor(json, config){
     // Load terrain, engine, view (in that order)
     var km = new KeyMap();
     l("Building mountains...");
@@ -34,9 +52,7 @@ if (document.body.id === "terrain-load") {
     l("Retrieving vectors...");
     var e = new Engine(t, config);
     l("Generating triangles...");
-    var v = new ThreeDeeView(e, json);
-
-    v.showHeightmap();
+    var v = new ThreeDeeView(e, json, config.ThreeDeeView);
 
     l("Setting time interval...");
     var blur = false;
@@ -72,6 +88,5 @@ if (document.body.id === "terrain-load") {
     }
 
     requestAnimationFrame(renderloop);
-  });
-
+  }
 }
