@@ -1,11 +1,12 @@
 /*
- *
+ * 3D view
  */
 
 import * as THREE from "three";
+import {l} from "../utils/logging";
 
 export class ThreeDeeView {
-  constructor(engine, sceneryjson, config) {
+  constructor(engine, sceneryjson, pgmodels, config) {
     window.THREE = THREE;
     window.tdv = this;
 
@@ -45,9 +46,34 @@ export class ThreeDeeView {
     scenerymesh.scale.set(hscale, vscale, hscale);
     this.scene.add( scenerymesh );
 
+    // Add pg meshes to paraglider objects
+    // Kind of dirty but avoids having to keep extra objects in sync
+    for (var pg of this.engine.paragliders) {
+      l("view3d: instantiating paraglider at position x="+
+        pg.pos.x+", y="+pg.pos.y+", z="+pg.pos.z);
+      //TODO: load different pgmeshes based on pg config, to have some variation
+      let pggeom = loader.parse(pgmodels[0]).geometry;
+      let pgmat  = new THREE.MeshBasicMaterial(
+        {color: 0x888888, side: THREE.DoubleSide, shading: THREE.FlatShading});
+      pg.mesh = new THREE.Mesh(pggeom, pgmat);
+      pg.mesh.position.set(pg.pos.x, pg.pos.y, pg.pos.z);
+      console.log(pg.mesh)
+      this.scene.add(pg.mesh);
+    }
+
     this.applyConfig(config);
 
   	document.body.appendChild( this.renderer.domElement );
+  }
+
+  // Read pg position from engine and update
+  updatePg() {
+    for (var pg of this.engine.paragliders) {
+      pg.mesh.position.set(pg.pos.x, pg.pos.y, pg.pos.z);
+      pg.mesh.rotation.set(0,0,0,'YZX');
+      pg.mesh.rotation.y = pg.heading;
+      pg.mesh.rotation.z = pg.bank;
+    }
   }
 
   applyConfig(config) {
@@ -66,6 +92,17 @@ export class ThreeDeeView {
 
   render() {
     this.renderer.render( this.scene, this.camera );
+  }
+
+  pgview(keymap, dt, pos) {
+    // View that looks at pg while rotating and zooming
+    // Instantiate cache vars
+    if (this.flyaround.translatevect === undefined) {
+      this.flyaround.translatevect = new THREE.Vector3();
+      // Reorder once
+      this.camera.rotation.reorder('YZX');
+      console.info("Rotate with a,s,d,w and zoom with f,v");
+    }
   }
 
   flyaround(keymap, dt) {

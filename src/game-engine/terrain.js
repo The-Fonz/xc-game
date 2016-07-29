@@ -16,7 +16,6 @@ export class Terrain {
     // TODO: don't use nearest but linearly interpolate
     let i = Math.round(vect.x / this.hscale);
     let j = Math.round(vect.z / this.hscale);
-    console.log(i,j)
     try {
       return this.heightmap[j][i] * this.heightmapvscale * this.vscale;
     } catch (e) {

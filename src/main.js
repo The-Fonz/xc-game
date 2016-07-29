@@ -10,49 +10,90 @@ import {promiseGet} from './utils/http';
 import {l} from './utils/logging';
 import {KeyMap} from './utils/input';
 
+// Basic config to avoid repetition. Override to customize
+// Namespaced to clearly indicate to which module config applies
+var BASICCONFIG = {
+  "Engine": {
+    "paragliders": [],
+  },
+  "Air": {
+  },
+  "Task": {
+  },
+  "ThreeDeeView": {
+    "clippingplane": 3000,
+    "fog": {"hex": 0xFFFFFF, "near": 400, "far": 3000},
+    "clearcolor": "white",
+    // Different meshes to be used in this.Engine.paragliders
+    "pgmeshes": {
+      'simplepg': "../obj/pgmodels/simplepg.json",
+    },
+  },
+};
+
 // Entry point for terrain load example
 if (document.body.id === "terrain-load") {
-  // Task config
-  var config = {
-    "paragliders": [
-      {position: {x:100, y:200, z:100}},
-    ],
-    "weather": {},
-    "task": {},
-    // "fog": {"hex": 0xFFFFFF, "near": 10, "far": 100},
-    "ThreeDeeView": {
-      "clippingplane": 3000,
-      "fog": {"hex": 0xFFFFFF, "near": 400, "far": 3000},
-      "showheightmap": true,
-      "axishelper": 3000,
-      "clearcolor": "white",
-    },
-  };
+  l("Loading terrain load example");
+
+  let config = BASICCONFIG;
+  config.ThreeDeeView.showheightmap = true;
+  config.ThreeDeeView.axishelper = 3000;
+  config.ThreeDeeView.flyaround = true;
 
   l("Loading resources...");
 
   promiseGet("../terrainmaker/grandcanyon.ignore.json")
   .then(JSON.parse)
   .then((json)=>{
-    let g = new Game(json, config);
+    let g = new Game(json, null, config);
   });
 }
 
+// Entry point for pg move example
+if (document.body.id === "freefly-example") {
+  l("Loading freefly example");
+
+  let config = BASICCONFIG;
+
+  config.Engine.paragliders = [
+    {position: {x:0, y:600, z:0}},
+  ]
+
+  l("Loading resources...");
+
+  let promises = [
+    promiseGet("../terrainmaker/grandcanyon.ignore.json").then(JSON.parse),
+  ];
+  // Add all different paraglider meshes to be loaded
+  let pgmlist = config.ThreeDeeView.pgmeshes;
+  for (var k of Object.keys(pgmlist)) {
+    promises.push(promiseGet(pgmlist[k]).then(JSON.parse));
+  }
+  Promise.all(promises).then((values)=>{
+    let terrainmodel = values[0];
+    // Get all values returned by promises but the first
+    let pgmodels = values.slice(1);
+    let g = new Game(terrainmodel, pgmodels, config);
+  });
+}
+
+
+
 class Game {
-  constructor(json, config){
+  constructor(terrainmodel, pgmodels, config){
     // Load terrain, engine, view (in that order)
     var km = new KeyMap();
     l("Building mountains...");
-    var t = new Terrain(json.xcgame.heightmap,
-      json.xcgame.hscale,
+    var t = new Terrain(terrainmodel.xcgame.heightmap,
+      terrainmodel.xcgame.hscale,
       // Vertical scale of terrain mesh
-      json.xcgame.vscale,
+      terrainmodel.xcgame.vscale,
       // Heightmap multiplier, excludes vscale
-      json.xcgame.heightmapvscale);
+      terrainmodel.xcgame.heightmapvscale);
     l("Retrieving vectors...");
-    var e = new Engine(t, config);
+    var e = new Engine(t, config.Engine);
     l("Generating triangles...");
-    var v = new ThreeDeeView(e, json, config.ThreeDeeView);
+    var v = new ThreeDeeView(e, terrainmodel, pgmodels, config.ThreeDeeView);
 
     l("Setting time interval...");
     var blur = false;
@@ -75,12 +116,19 @@ class Game {
       let dt = (timestamp-time)/1000;
 
       if (blur === false) {
-        // e.processinput(km, dt);
+        if (pgmodels) {
+          e.paragliders[0].input(dt, km);
+          //TODO: Make proper pgview
+          v.camera.lookAt(e.paragliders[0].pos);
+          v.pgview(km, dt, e.paragliders[0].pos);
+        }
+        if (config.ThreeDeeView.flyaround) {
+          v.flyaround(km, dt);
+        }
         e.update(dt);
+        v.updatePg();
         // l("animating");
-        v.flyaround(km, dt);
         v.render();
-        console.info("GL: " + t.groundlevel(v.camera.position));
       }
 
       requestAnimationFrame(renderloop);
