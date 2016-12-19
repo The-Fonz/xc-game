@@ -11,14 +11,11 @@ export class ThreeDeeView {
     window.tdv = this;
 
     this.engine = engine;
+    this.config = config;
 
     this.scene = new THREE.Scene();
 
   	this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, config.clippingplane );
-    this.camera.position.x = 2000;
-    this.camera.position.y = 2000;
-  	this.camera.position.z = 2E3;
-    this.camera.lookAt(new THREE.Vector3(0,0,0));
 
   	this.renderer = new THREE.WebGLRenderer();
   	this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -34,7 +31,6 @@ export class ThreeDeeView {
 
     // instantiate a loader
     var loader = new THREE.JSONLoader();
-
 
     let loaded = loader.parse(sceneryjson);
     var mtl = new THREE.MeshStandardMaterial( { color: 0xFFFFFF, vertexColors: THREE.FaceColors, roughness: 0.55, metalness: 0.5 } )
@@ -88,27 +84,77 @@ export class ThreeDeeView {
       this.renderer.setClearColor(config.clearcolor);
     if (config.showheightmap)
       this.showHeightmap();
+
+    // Initialize first cam
+    this.nextCam();
   }
 
   render() {
     this.renderer.render( this.scene, this.camera );
   }
 
-  pgview(keymap, dt, pos) {
+  nextCam() {
+    if (this.camIndex === undefined ||
+        // Sorry for this, I just love short code
+        ++this.camIndex >= this.config.cameras.length) {
+      this.camIndex = 0;
+    }
+    this.camType = this.config.cameras[this.camIndex]['type'];
+    l('Switched to cam type ' + this.camType);
+  }
+
+  cam(keymap, dt, pos) {
+    switch (this.camType) {
+      case 'fixed':
+        this.camFixed(keymap, dt, pos);
+        break;
+      case 'free':
+        this.camFree(keymap, dt);
+        break;
+      case 'relative':
+        this.camRelative(keymap, dt, pos);
+        break;
+      case 'cloud':
+        this.camCloud();
+        break;
+      default:
+        throw Error("Camera " + this.camType + " not found");
+    }
+  }
+
+  camFixed(keymap, dt, pos) {
+    this.camera.position.fromArray(
+      this.config.cameras[this.camIndex]['position']);
+    this.camera.lookAt(pos);
+  }
+
+  camCloud() {}
+
+  camRelative(keymap, dt, pos) {
     // View that looks at pg while rotating and zooming
     // Instantiate cache vars
-    if (this.flyaround.translatevect === undefined) {
-      this.flyaround.translatevect = new THREE.Vector3();
+    if (this.camRelative.translatevect === undefined) {
+      this.camRelative.translatevect = new THREE.Vector3();
+      this.camRelative.translatevect.fromArray(
+        this.config.cameras[this.camIndex]['initial']);
       // Reorder once
       this.camera.rotation.reorder('YZX');
       console.info("Rotate with a,s,d,w and zoom with f,v");
     }
+    // Zoom with fv
+    let zoom = keymap.get('f') - keymap.get('v');
+    if (zoom) this.camRelative.translatevect.multiplyScalar(1-zoom*.01);
+    // TODO: Rotate around top axis with ad
+
+    // Set to position of pg + offset position
+    this.camera.position.addVectors(pos, this.camRelative.translatevect);
+    this.camera.lookAt(pos);
   }
 
-  flyaround(keymap, dt) {
+  camFree(keymap, dt) {
     // Instantiate cache vars
-    if (this.flyaround.translatevect === undefined) {
-      this.flyaround.translatevect = new THREE.Vector3();
+    if (this.camFree.translatevect === undefined) {
+      this.camFree.translatevect = new THREE.Vector3();
       // Reorder once
       this.camera.rotation.reorder('YZX');
       console.info("Fly around with w,s,a,d,f,v and arrow keys");
@@ -129,12 +175,12 @@ export class ThreeDeeView {
       this.camera.rotation.x += u;
       this.camera.rotation.y += l;
 
-      this.flyaround.translatevect.set(side,0,fwd);
+      this.camFree.translatevect.set(side,0,fwd);
 
-      this.flyaround.translatevect.applyEuler(this.camera.rotation);
-      this.flyaround.translatevect.setY(up);
+      this.camFree.translatevect.applyEuler(this.camera.rotation);
+      this.camFree.translatevect.setY(up);
 
-      this.camera.position.add(this.flyaround.translatevect);
+      this.camera.position.add(this.camFree.translatevect);
     }
   }
 

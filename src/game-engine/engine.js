@@ -8,6 +8,7 @@ import {Paraglider} from "./paraglider";
 export class Engine {
   constructor(terrain, config) {
     this.terrain = terrain;
+    this.config = config;
     // Init lift and paragliders based on config
     var pglist = config['paragliders'];
     this.paragliders = [];
@@ -18,6 +19,7 @@ export class Engine {
   }
 
   update(dt) {
+    dt = dt * this.config.timeMultiplier || 1;
     // Update paragliders
     for (var i=0; i<this.paragliders.length; i++) {
       this.paragliders[i].increment(dt);

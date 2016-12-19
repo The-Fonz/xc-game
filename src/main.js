@@ -15,6 +15,8 @@ import {KeyMap} from './utils/input';
 var BASICCONFIG = {
   "Engine": {
     "paragliders": [],
+    // Speed up simulation by this multiplication factor
+    "timeMultiplier": 10,
   },
   "Air": {
   },
@@ -28,6 +30,13 @@ var BASICCONFIG = {
     "pgmeshes": {
       'simplepg': "../obj/pgmodels/simplepg.json",
     },
+    // Order of cameras determines the cycle order and first one instantiated
+    "cameras": [
+      {'type': 'fixed', 'position': [2E3, 2E3, 2E3]},
+      {'type': 'relative', 'initial': [150,150,150]},
+      {'type': 'free'},
+      {'type': 'cloud'},
+    ],
   },
 };
 
@@ -118,13 +127,13 @@ class Game {
       if (blur === false) {
         if (pgmodels) {
           e.paragliders[0].input(dt, km);
-          //TODO: Make proper pgview
-          v.camera.lookAt(e.paragliders[0].pos);
-          v.pgview(km, dt, e.paragliders[0].pos);
         }
-        if (config.ThreeDeeView.flyaround) {
-          v.flyaround(km, dt);
+        // Switch camera
+        if (km.get(" ")) {
+          km.reset(" ");
+          v.nextCam();
         }
+        v.cam(km, dt, e.paragliders[0].pos);
         e.update(dt);
         v.updatePg();
         // l("animating");

@@ -2,8 +2,8 @@
   "name": "xc-game",
   "version": "0.0.0",
   "scripts": {
-    "build": "browserify  --debug src/main.js -o bundle.js -t babelify",
-    "watch": "watchify -v --debug src/main.js -o bundle.js -t babelify",
+    "build": "browserify  --debug src/main.js -o static/bundle.js -t babelify",
+    "watch": "watchify -v --debug src/main.js -o static/bundle.js -t babelify",
     "serve": "http-server -c-1 -o"
   },
   "dependencies": {
