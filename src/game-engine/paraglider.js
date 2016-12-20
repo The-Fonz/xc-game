@@ -91,6 +91,7 @@ export class Paraglider {
     if (this.landed) return true;
     if (terrain.getHeight(this.pos) + (this.offsetY||0) > this.pos.y) {
       this.landed = true;
+      this.bank = 0;
       // Zoom out again
       this.speedstate = 0;
       return true;
@@ -100,8 +101,25 @@ export class Paraglider {
    * Check if terrain steep enough to take off, and if so, do it
    */
   checkTakeoff(terrain: Terrain) {
-    let steepness = terrain.getGradient();
-    // TODO: What is criterium?
+    let c = this.checkTakeoff.cacheVars;
+    if (c === undefined) {
+      c = {
+        gradient: new THREE.Vector3(),
+        zaxis: new THREE.Vector3(0,0,1),
+      };
+    }
+    terrain.getGradient(c.gradient, this.pos);
+    let steepness = c.gradient.length();
+    let gradientDirection = Math.atan(c.gradient.x / c.gradient.z);
+    // Correct for south
+    if (c.gradient.z > 0) gradientDirection += Math.PI;
+    // If really walking down the slope
+    let relDir = Math.abs(gradientDirection - this.heading) % (2*Math.PI);
+    if (steepness > 200 && relDir<1) {
+      this.landed = false;
+      // Take off in direction of gradient
+      this.heading = gradientDirection;
+    }
   }
   /**
    * Avoid terrain by projecting vector

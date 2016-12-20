@@ -69,7 +69,7 @@ if (document.body.id === "freefly-example") {
   let config = BASICCONFIG;
 
   config.Engine.paragliders = [
-    {position: {x:0, y:1500, z:0}},
+    {position: {x:0, y:500, z:0}},
   ]
 
   l("Loading resources...");

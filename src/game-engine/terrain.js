@@ -30,7 +30,7 @@ export class Terrain {
   getHeight(vect) {
     let h = this.heightmap;
     let [i1, i2, j1, j2] = this._gridcoords(vect);
-    // Relative coords within triangles
+    // Relative coords within rectangle
     let x = (vect.x % this.hscale) / this.hscale;
     let z = (vect.z % this.hscale) / this.hscale;
     try {
@@ -45,36 +45,41 @@ export class Terrain {
 
   /**
    * Calculate surface gradient, point towards middle of map if outside of it
-   * @param {THREE.Vector3} vect Some vector in 3D world coordinates
-   * @returns {THREE.Vector2} Surface gradient
+   * @param pos Position in 3D world coordinates
+   * @param out 3D vector to store result in (y is 0)
    */
-  getGradient(vect: THREE.Vector3) {
-
+  getGradient(out: THREE.Vector3, pos: THREE.Vector3) {
+    let [i1, i2, j1, j2] = this._gridcoords(pos);
+    let x = (pos.x % this.hscale) / this.hscale;
+    let z = (pos.z % this.hscale) / this.hscale;
+    let l = {};
+    [l.x1, l.z1] = this._gradient(i1,j1);
+    [l.x2, l.z2] = this._gradient(i2,j1);
+    [l.x3, l.z3] = this._gradient(i1,j2);
+    [l.x4, l.z4] = this._gradient(i2,j2);
+    out.set(this._interpolate4([l.x1, l.x2, l.x3, l.x4], x, z),
+            0,
+            this._interpolate4([l.z1, l.z2, l.z3, l.z4], x, z));
   }
   /**
    * Internal method for calculating discrete gradient at i,j
    * using Scharr kernel
    */
   _gradient(i,j) {
-    if (this._gradient.cacheVars === undefined) {
-      this._gradient.cacheVars = {v: THREE.Vector3()};
-    }
-    let c = this._gradient.cacheVars;
     let h = this.heightmap;
-    c.v.z = (h[j+1][i-1] * 3 +
+    let z = (h[j+1][i-1] * 3 +
              h[j+1][i  ] * 10 +
              h[j+1][i+1] * 3 +
              h[j-1][i-1] * -3 +
              h[j-1][i  ] * -10 +
              h[j-1][i+1] * -3);
-    c.v.x = (h[j+1][i+1] * 3 +
+    let x = (h[j+1][i+1] * 3 +
              h[j  ][i+1] * 10 +
              h[j-1][i+1] * 3 +
              h[j+1][i-1] * -3 +
              h[j  ][i-1] * -10 +
              h[j-1][i-1] * -3);
-    c.v.y = 0;
-    return c.v;
+    return [x,z];
   }
 
   /** Internal method for calculating surrounding grid coords
