@@ -39,6 +39,7 @@ export class Terrain {
         x, z) * this.heightmapvscale * this.vscale;
     } catch (e) {
       // Out of map area
+      console.error("getHeight: out of map area");
       return NaN;
     }
   }
@@ -53,13 +54,23 @@ export class Terrain {
     let x = (pos.x % this.hscale) / this.hscale;
     let z = (pos.z % this.hscale) / this.hscale;
     let l = {};
-    [l.x1, l.z1] = this._gradient(i1,j1);
-    [l.x2, l.z2] = this._gradient(i2,j1);
-    [l.x3, l.z3] = this._gradient(i1,j2);
-    [l.x4, l.z4] = this._gradient(i2,j2);
-    out.set(this._interpolate4([l.x1, l.x2, l.x3, l.x4], x, z),
-            0,
-            this._interpolate4([l.z1, l.z2, l.z3, l.z4], x, z));
+    try {
+      [l.x1, l.z1] = this._gradient(i1,j1);
+      [l.x2, l.z2] = this._gradient(i2,j1);
+      [l.x3, l.z3] = this._gradient(i1,j2);
+      [l.x4, l.z4] = this._gradient(i2,j2);
+    } catch (e) {
+      // Out of map area
+      console.error("Out of map area I think");
+      // TODO: Point `out` to middle of map
+    }
+    let ox = this._interpolate4([l.x1, l.x2, l.x3, l.x4], x, z);
+    let oz = this._interpolate4([l.z1, l.z2, l.z3, l.z4], x, z);
+    // Correct for kernel and scaling
+    let correct = (val) => {
+      return val * this.heightmapvscale * this.vscale / (32 * this.hscale);
+    }
+    out.set(correct(ox), 0, correct(oz));
   }
   /**
    * Internal method for calculating discrete gradient at i,j

@@ -22,7 +22,7 @@ export class Engine {
     for (var i=0; i<pglist.length; i++) {
       var pos = pglist[i].position;
       this.paragliders.push(new Paraglider(pos.x, pos.y, pos.z,
-                                           this.config.pgOffsetY));
+                                           this.config.Paraglider));
     }
   }
   /**

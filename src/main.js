@@ -15,12 +15,24 @@ import {KeyMap} from './utils/input';
 var BASICCONFIG = {
   "Engine": {
     "paragliders": [],
-    // Land when pg's centroid is this close to ground. Depends on 3D model
-    "pgOffsetY": 15,
     // Speed up simulation by this multiplication factor
     // Does NOT influence steering or camera movements,
     // just the pg speed
-    "timeMultiplier": 100,
+    "timeMultiplier": 30,
+    // Nested config because Engine instantiates Paraglider objects
+    "Paraglider": {
+      // Land when pg's centroid is this close to ground. Depends on 3D model
+      "offsetY": 15,
+      // Dimensionless
+      "takeoffGradient": .5,
+      // Take off if gradient enough and direction within this much rad
+      "takeoffDirection": 1,
+      // Horizontal and vertical bounds for walking speed
+      "walkingHorizontalSpeed": 3,
+      "walkingVerticalSpeed": 2,
+      // Possibly limit the gradient that can be handled, but that would
+      // require designing the map to contain paths that are not too steep
+    },
   },
   "Air": {
   },

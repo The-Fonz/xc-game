@@ -8,10 +8,10 @@ import * as THREE from "three";
 export class Paraglider {
   /**
    * Initialize pg at position x,y,z
-   * @param offsetY Height of centroid above ground, depends on 3D model
+   * @param config Specific Paraglider config
    */
-  constructor(x: number, y: number, z: number, offsetY: number) {
-    this.offsetY = offsetY;
+  constructor(x: number, y: number, z: number, config: Object) {
+    this.config = config;
     this.pos = new THREE.Vector3(x,y,z);
     // For caching purposes, gets recalculated in this.increment()
     this.speed = new THREE.Vector3();
@@ -28,15 +28,19 @@ export class Paraglider {
       {'vhor': 15, 'vvert': -15/9, 'steeringSensitivity': 2},
       {'vhor': 18, 'vvert': -18/7, 'steeringSensitivity': 1},
     ];
-    this.landed = false;
+    this.landed = 0;
   }
   /**
    * Increment by timestep dt (seconds)
    */
   increment(dt: number, terrain) {
+    let c = this.increment.cacheVars;
+    if (c === undefined) {
+      c = {newPos: new THREE.Vector3()};
+    }
     // Always set rotation, regardless of if we've landed or not
     this.rotation.set(0,this.heading,0);
-    if (!this.landed) {
+    if (this.landed !== 1) {
       // Construct speed vector
       let perf = this.performance[this.speedstate];
       this.speed.set(0,perf.vvert,perf.vhor);
@@ -46,10 +50,29 @@ export class Paraglider {
     } else {
       // Walk
       if (terrain && this.walk) {
-        this.speed.set(0,0,this.walk*3);
+        this.speed.set(0,0,1);
         this.speed.applyEuler(this.rotation);
-        this.pos.addScaledVector(this.speed, dt);
-        this.pos.y = terrain.getHeight(this.pos) + this.offsetY||0;
+        // Check if not going up too fast
+        // If so, iteratively find max. horizontal distance we can walk
+        // Binary search might be more precise and efficient
+        let walkSpd = this.walk * this.config.walkingHorizontalSpeed;
+        let newHeight = 0;
+        let hdist = walkSpd * dt;
+        console.log('hdist '+hdist)
+        do {
+          // Reset first
+          c.newPos.copy(this.pos);
+          c.newPos.addScaledVector(this.speed, hdist);
+          newHeight = terrain.getHeight(c.newPos) + this.config.offsetY||0;
+          console.log("hdist "+hdist+" newHeight "+newHeight+" old "+this.pos.y);
+          hdist *= .7;
+          if (hdist < .1) {
+            console.error("No possible walking speed found");
+          }
+        } while (newHeight > this.pos.y + dt*this.config.walkingVerticalSpeed);
+        console.log("Walking speed limited to "+hdist);
+        this.pos.copy(c.newPos);
+        this.pos.y = terrain.getHeight(this.pos);
       }
     }
   }
@@ -58,6 +81,13 @@ export class Paraglider {
    */
   input(dt: number, keymap: KeyMap) {
     let k = keymap;
+
+    // If we just took off...
+    if (this.landed === -1) {
+      // Depress forward arrow to avoid accidental speedbar engaging
+      keymap.reset('ArrowUp');
+      this.landed = 0;
+    }
 
     if (!this.landed) {
       // Steering speed in rad/s
@@ -84,13 +114,13 @@ export class Paraglider {
     }
   }
   /**
-   * Sets `this.landed` to `true` if below groundlevel
+   * Sets `this.landed` to `1` if below groundlevel
    * @returns {Boolean} true if landed
    */
   checkLanded(terrain: Terrain) {
     if (this.landed) return true;
-    if (terrain.getHeight(this.pos) + (this.offsetY||0) > this.pos.y) {
-      this.landed = true;
+    if (terrain.getHeight(this.pos) + (this.config.offsetY||0) > this.pos.y) {
+      this.landed = 1;
       this.bank = 0;
       // Zoom out again
       this.speedstate = 0;
@@ -115,8 +145,10 @@ export class Paraglider {
     if (c.gradient.z > 0) gradientDirection += Math.PI;
     // If really walking down the slope
     let relDir = Math.abs(gradientDirection - this.heading) % (2*Math.PI);
-    if (steepness > 200 && relDir<1) {
-      this.landed = false;
+    if (steepness > this.config.takeoffGradient &&
+        relDir < this.config.takeoffDirection) {
+      // Indicate that we just took off
+      this.landed = -1;
       // Take off in direction of gradient
       this.heading = gradientDirection;
     }
