@@ -18,9 +18,9 @@ export class Paraglider {
     this.speedstate = 0;
     this.performance = [
       // Glide ratio of 11, 9, 7 at trim, half, full speedbar
-      {'vhor': 11, 'vvert': -11/11},
-      {'vhor': 15, 'vvert': -15/9},
-      {'vhor': 18, 'vvert': -18/7},
+      {'vhor': 11, 'vvert': -11/11, 'steeringSensitivity': 6},
+      {'vhor': 15, 'vvert': -15/9, 'steeringSensitivity': 2},
+      {'vhor': 18, 'vvert': -18/7, 'steeringSensitivity': 1},
     ];
   }
   increment(dt) {
@@ -35,11 +35,13 @@ export class Paraglider {
   input(dt, keymap) {
     let k = keymap.status;
     // Steering speed in rad/s
-    let steermultiplier = 3 * dt;
+    let steeringSensitivity =
+      this.performance[this.speedstate]['steeringSensitivity'];
+    let steermultiplier = dt * steeringSensitivity;
     let steer = Number(k.ArrowLeft||0 - k.ArrowRight||0);
     this.heading += steermultiplier * steer;
     // Bank in radians
-    this.bank = -steer*.5;
+    this.bank = -steer*.07 * steeringSensitivity;
     // Now change speedstate
     this.speedstate += Number(k.ArrowUp||0 - k.ArrowDown||0);
     if (this.speedstate < 0) this.speedstate = 0;

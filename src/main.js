@@ -16,6 +16,8 @@ var BASICCONFIG = {
   "Engine": {
     "paragliders": [],
     // Speed up simulation by this multiplication factor
+    // Does NOT influence steering or camera movements,
+    // just the pg speed
     "timeMultiplier": 10,
   },
   "Air": {
@@ -32,10 +34,10 @@ var BASICCONFIG = {
     },
     // Order of cameras determines the cycle order and first one instantiated
     "cameras": [
+      {'type': 'cloud', 'cloudbase': 1500},
       {'type': 'fixed', 'position': [2E3, 2E3, 2E3]},
-      {'type': 'relative', 'initial': [150,150,150]},
+      {'type': 'relative', 'initialRotation': [-1,-2,0]},
       {'type': 'free'},
-      {'type': 'cloud'},
     ],
   },
 };
@@ -65,7 +67,7 @@ if (document.body.id === "freefly-example") {
   let config = BASICCONFIG;
 
   config.Engine.paragliders = [
-    {position: {x:0, y:600, z:0}},
+    {position: {x:0, y:1500, z:0}},
   ]
 
   l("Loading resources...");
@@ -133,7 +135,7 @@ class Game {
           km.reset(" ");
           v.nextCam();
         }
-        v.cam(km, dt, e.paragliders[0].pos);
+        v.cam(km, dt, e.paragliders[0]);
         e.update(dt);
         v.updatePg();
         // l("animating");

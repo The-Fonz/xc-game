@@ -70,6 +70,20 @@ export class ThreeDeeView {
       pg.mesh.rotation.y = pg.heading;
       pg.mesh.rotation.z = pg.bank;
     }
+    if (this.updatePg.cacheVars === undefined) {
+      this.updatePg.cacheVars = {
+        'targetZoom': 1,
+      };
+    }
+    let c = this.updatePg.cacheVars;
+    // Zoom camera if going faster
+    let oldzoom = this.camera.zoom;
+    c.targetZoom = 1 + .3* this.engine.paragliders[0].speedstate;
+    // Only update if necessary
+    if (oldzoom !== c.targetZoom) {
+      this.camera.zoom = .95*this.camera.zoom + .05*c.targetZoom;
+      this.camera.updateProjectionMatrix();
+    }
   }
 
   applyConfig(config) {
@@ -103,19 +117,19 @@ export class ThreeDeeView {
     l('Switched to cam type ' + this.camType);
   }
 
-  cam(keymap, dt, pos) {
+  cam(keymap, dt, pg) {
     switch (this.camType) {
       case 'fixed':
-        this.camFixed(keymap, dt, pos);
+        this.camFixed(keymap, dt, pg.pos);
         break;
       case 'free':
         this.camFree(keymap, dt);
         break;
       case 'relative':
-        this.camRelative(keymap, dt, pos);
+        this.camRelative(keymap, dt, pg.pos);
         break;
       case 'cloud':
-        this.camCloud();
+        this.camCloud(keymap, dt, pg);
         break;
       default:
         throw Error("Camera " + this.camType + " not found");
@@ -128,26 +142,70 @@ export class ThreeDeeView {
     this.camera.lookAt(pos);
   }
 
-  camCloud() {}
+  camCloud(keymap, dt, pg) {
+    if (this.camCloud.cacheVars === undefined) {
+      this.camCloud.cacheVars = {
+        rotateEuler: new THREE.Euler(0,0,0,'YZX'),
+        translateVect: new THREE.Vector3(0,0,0),
+      };
+    }
+    let c = this.camCloud.cacheVars;
+    let cloudbase = this.config.cameras[this.camIndex]['cloudbase'];
+    let vlength = 1.1 * cloudbase;
+    // Reset translateVect
+    // Determine where on line camera sits
+    c.translateVect.set(0, 0, -vlength *.5);
+    // Calculate up/down camera rotation
+    // Vector reaches from pg to cloudbase, has fixed length
+    c.rotateEuler.x = Math.asin((cloudbase - pg.pos.y) / vlength);
+    // Make error signal
+    // We only want to use the positive modulus range
+    let relativeRotation = (c.rotateEuler.y - pg.rotation.y);
+    if (relativeRotation < 0) relativeRotation = 2*Math.PI - Math.abs(relativeRotation)%(2*Math.PI);
+    relativeRotation = (relativeRotation + Math.PI)
+            % (2*Math.PI) - Math.PI;
+    // Smooth transition when cam looks pg in face by
+    // linearly decreasing error signal towards 180deg
+    relativeRotation = relativeRotation * (Math.PI-Math.abs(relativeRotation));
+    // Apply error signal to camera rotation
+    c.rotateEuler.y -= relativeRotation * .5*dt;
+    // Rotate
+    c.translateVect.applyEuler(c.rotateEuler);
+    // Set camera position
+    this.camera.position.addVectors(pg.pos, c.translateVect);
+    this.camera.lookAt(pg.pos);
+  }
 
   camRelative(keymap, dt, pos) {
     // View that looks at pg while rotating and zooming
     // Instantiate cache vars
-    if (this.camRelative.translatevect === undefined) {
-      this.camRelative.translatevect = new THREE.Vector3();
-      this.camRelative.translatevect.fromArray(
-        this.config.cameras[this.camIndex]['initial']);
-      // Reorder once
-      this.camera.rotation.reorder('YZX');
+    if (this.camRelative.cacheVars === undefined) {
+      this.camRelative.cacheVars = {
+        rotateEuler: new THREE.Euler(0,0,0,'YZX').fromArray(
+          this.config.cameras[this.camIndex]['initialRotation']),
+        // Must have nonzero initial length for clamp to work
+        translateVect: new THREE.Vector3(0,0,200),
+      };
+      // We don't use Z rotation
+      this.camRelative.cacheVars.rotateEuler.z = 0;
       console.info("Rotate with a,s,d,w and zoom with f,v");
     }
-    // Zoom with fv
+    let c = this.camRelative.cacheVars;
+    // Reset to look into Z direction, keep length for zoom to work
+    c.translateVect.set(0,0,
+      c.translateVect.length());
+    c.translateVect.clampLength(150,2000);
+    // Set side axis rotation
+    c.rotateEuler.x += dt * (keymap.get('s') - keymap.get('w'));
+    // Set top axis rotation
+    c.rotateEuler.y += dt*2 * (keymap.get('d') - keymap.get('a'));
+    // Apply rotation to the reset translateVect
+    c.translateVect.applyEuler(c.rotateEuler);
+    // Zoom
     let zoom = keymap.get('f') - keymap.get('v');
-    if (zoom) this.camRelative.translatevect.multiplyScalar(1-zoom*.01);
-    // TODO: Rotate around top axis with ad
-
+    if (zoom) c.translateVect.multiplyScalar(1-zoom*dt*2);
     // Set to position of pg + offset position
-    this.camera.position.addVectors(pos, this.camRelative.translatevect);
+    this.camera.position.addVectors(pos, c.translateVect);
     this.camera.lookAt(pos);
   }
 
