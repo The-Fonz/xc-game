@@ -8,8 +8,10 @@ import * as THREE from "three";
 export class Paraglider {
   /**
    * Initialize pg at position x,y,z
+   * @param offsetY Height of centroid above ground, depends on 3D model
    */
-  constructor(x: number, y: number, z: number) {
+  constructor(x: number, y: number, z: number, offsetY: number) {
+    this.offsetY = offsetY;
     this.pos = new THREE.Vector3(x,y,z);
     // For caching purposes, gets recalculated in this.increment()
     this.speed = new THREE.Vector3();
@@ -31,7 +33,7 @@ export class Paraglider {
   /**
    * Increment by timestep dt (seconds)
    */
-  increment(dt: number) {
+  increment(dt: number, terrain) {
     // Always set rotation, regardless of if we've landed or not
     this.rotation.set(0,this.heading,0);
     if (!this.landed) {
@@ -42,41 +44,64 @@ export class Paraglider {
       // Only changes position, not spd
       this.pos.addScaledVector(this.speed, dt);
     } else {
-      this.speed.set(0,0,0);
-      // Walk if doing vol-biv sim
+      // Walk
+      if (terrain && this.walk) {
+        this.speed.set(0,0,this.walk*3);
+        this.speed.applyEuler(this.rotation);
+        this.pos.addScaledVector(this.speed, dt);
+        this.pos.y = terrain.getHeight(this.pos) + this.offsetY||0;
+      }
     }
   }
   /**
    * Process player inputs
    */
   input(dt: number, keymap: KeyMap) {
-    let k = keymap.status;
-    // Steering speed in rad/s
-    let steeringSensitivity =
+    let k = keymap;
+
+    if (!this.landed) {
+      // Steering speed in rad/s
+      let steeringSensitivity =
       this.performance[this.speedstate]['steeringSensitivity'];
-    let steermultiplier = dt * steeringSensitivity;
-    let steer = Number(k.ArrowLeft||0 - k.ArrowRight||0);
-    this.heading += steermultiplier * steer;
-    // Bank in radians
-    this.bank = -steer*.07 * steeringSensitivity;
-    // Now change speedstate
-    this.speedstate += Number(k.ArrowUp||0 - k.ArrowDown||0);
-    if (this.speedstate < 0) this.speedstate = 0;
-    let l = this.performance.length;
-    if (this.speedstate >= l) this.speedstate = l-1;
-    // Depress keys
-    k.ArrowUp = false;
-    k.ArrowDown = false;
+      let steermultiplier = dt * steeringSensitivity;
+      let steer = Number(k.get('ArrowLeft')||0 - k.get('ArrowRight')||0);
+      this.heading += steermultiplier * steer;
+      // Bank in radians
+      this.bank = -steer*.07 * steeringSensitivity;
+      // Now change speedstate
+      this.speedstate += Number(k.get('ArrowUp')||0 - k.get('ArrowDown')||0);
+      if (this.speedstate < 0) this.speedstate = 0;
+      let l = this.performance.length;
+      if (this.speedstate >= l) this.speedstate = l-1;
+      // Depress keys
+      k.reset('ArrowUp');
+      k.reset('ArrowDown');
+    } else {
+      // Walk
+      this.walk = k.get('ArrowUp') - k.get('ArrowDown');
+      this.heading += dt * 8 *
+            Number(k.get('ArrowLeft')||0 - k.get('ArrowRight')||0);
+    }
   }
   /**
    * Sets `this.landed` to `true` if below groundlevel
-   * @param offset Height from pg centroid to its lowest point
+   * @returns {Boolean} true if landed
    */
-  checkLanded(terrain: Terrain, offset: number) {
-    if (terrain.getHeight(this.pos) + offset > this.pos.y) {
+  checkLanded(terrain: Terrain) {
+    if (this.landed) return true;
+    if (terrain.getHeight(this.pos) + (this.offsetY||0) > this.pos.y) {
       this.landed = true;
-      // TODO: Notify other components that we've landed!
+      // Zoom out again
+      this.speedstate = 0;
+      return true;
     }
+  }
+  /**
+   * Check if terrain steep enough to take off, and if so, do it
+   */
+  checkTakeoff(terrain: Terrain) {
+    let steepness = terrain.getGradient();
+    // TODO: What is criterium?
   }
   /**
    * Avoid terrain by projecting vector

@@ -16,7 +16,7 @@ var BASICCONFIG = {
   "Engine": {
     "paragliders": [],
     // Land when pg's centroid is this close to ground. Depends on 3D model
-    "pgOffsetY": 5,
+    "pgOffsetY": 15,
     // Speed up simulation by this multiplication factor
     // Does NOT influence steering or camera movements,
     // just the pg speed
@@ -32,7 +32,7 @@ var BASICCONFIG = {
     "clearcolor": "white",
     // Different meshes to be used in this.Engine.paragliders
     "pgmeshes": {
-      'simplepg': "../obj/pgmodels/simplepg.json",
+      "simplepg": "../obj/pgmodels/simplepg.json",
     },
     // Order of cameras determines the cycle order and first one instantiated
     "cameras": [

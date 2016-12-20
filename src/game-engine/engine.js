@@ -21,7 +21,8 @@ export class Engine {
     this.paragliders = [];
     for (var i=0; i<pglist.length; i++) {
       var pos = pglist[i].position;
-      this.paragliders.push(new Paraglider(pos.x, pos.y, pos.z));
+      this.paragliders.push(new Paraglider(pos.x, pos.y, pos.z,
+                                           this.config.pgOffsetY));
     }
   }
   /**
@@ -33,11 +34,15 @@ export class Engine {
     for (var i=0; i<this.paragliders.length; i++) {
       let pg = this.paragliders[i];
       // Check if landed
-      pg.checkLanded(this.terrain, this.config.pgOffsetY);
+      let landed = pg.checkLanded(this.terrain);
+      if (landed) {
+        // Check if able to take off
+        pg.checkTakeoff(this.terrain);
+      }
       // Do terrain collision avoidance
-      pg.avoidTerrain(this.terrain, this.config.pgOffsetY);
+      pg.avoidTerrain(this.terrain);
       // Increment position
-      this.paragliders[i].increment(dt);
+      this.paragliders[i].increment(dt, this.terrain);
     }
   }
 }
