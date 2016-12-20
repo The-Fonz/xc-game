@@ -2,7 +2,15 @@
  * Terrain class
  */
 
+/** Represents terrain grid, enables fast computation for use in game engine */
 export class Terrain {
+  /**
+   * Instantiates Terrain
+   * @param {Array} heightmap Unencoded heightmap, list of numbers
+   * @param {number} hscale Horizontal spacing between heightmap points
+   * @param {number} vscale Vertical scale of terrain mesh
+   * @param {number} heightmapvscale Heightmap multiplier, excludes vscale
+   */
   constructor(heightmap, hscale, vscale, heightmapvscale) {
     // Load unencoded heightmap
     this.heightmap = heightmap;

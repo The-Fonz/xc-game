@@ -5,7 +5,9 @@
 import * as THREE from "three";
 import {l} from "../utils/logging";
 
+/** WebGL view */
 export class ThreeDeeView {
+  /** Instantiate using engine, scenery, paraglider 3D models and config */
   constructor(engine, sceneryjson, pgmodels, config) {
     window.THREE = THREE;
     window.tdv = this;
@@ -62,7 +64,7 @@ export class ThreeDeeView {
   	document.body.appendChild( this.renderer.domElement );
   }
 
-  // Read pg position from engine and update
+  /** Read pg position from engine and update their mesh positions */
   updatePg() {
     for (var pg of this.engine.paragliders) {
       pg.mesh.position.set(pg.pos.x, pg.pos.y, pg.pos.z);
@@ -86,6 +88,7 @@ export class ThreeDeeView {
     }
   }
 
+  /** Apply configuration object */
   applyConfig(config) {
     if (config.fog)
       this.scene.fog = new THREE.Fog(
@@ -103,10 +106,12 @@ export class ThreeDeeView {
     this.nextCam();
   }
 
+  /** Call renderer */
   render() {
     this.renderer.render( this.scene, this.camera );
   }
 
+  /** Switch to next cam in camera config list */
   nextCam() {
     if (this.camIndex === undefined ||
         // Sorry for this, I just love short code
@@ -117,7 +122,8 @@ export class ThreeDeeView {
     l('Switched to cam type ' + this.camType);
   }
 
-  cam(keymap, dt, pg) {
+  /** Use the currently set camera */
+  cam(keymap: KeyMap, dt: number, pg: Paraglider) {
     switch (this.camType) {
       case 'fixed':
         this.camFixed(keymap, dt, pg.pos);
@@ -136,13 +142,17 @@ export class ThreeDeeView {
     }
   }
 
-  camFixed(keymap, dt, pos) {
+  /** Camera that looks at `pos` from configured position */
+  camFixed(keymap: KeyMap, dt: number, pos: THREE.Vector3) {
     this.camera.position.fromArray(
       this.config.cameras[this.camIndex]['position']);
     this.camera.lookAt(pos);
   }
 
-  camCloud(keymap, dt, pg) {
+  /**
+   * TODO: explain
+   */
+  camCloud(keymap: KeyMap, dt: number, pg: Paraglider) {
     if (this.camCloud.cacheVars === undefined) {
       this.camCloud.cacheVars = {
         rotateEuler: new THREE.Euler(0,0,0,'YZX'),
@@ -176,7 +186,10 @@ export class ThreeDeeView {
     this.camera.lookAt(pg.pos);
   }
 
-  camRelative(keymap, dt, pos) {
+  /**
+   * Look at pos from fixed angle, rotate and zoom with wasdfv
+   */
+  camRelative(keymap: KeyMap, dt: number, pos: THREE.Vector3) {
     // View that looks at pg while rotating and zooming
     // Instantiate cache vars
     if (this.camRelative.cacheVars === undefined) {
@@ -209,7 +222,10 @@ export class ThreeDeeView {
     this.camera.lookAt(pos);
   }
 
-  camFree(keymap, dt) {
+  /**
+   * Fly around with wasdfv and arrow keys
+   */
+  camFree(keymap: KeyMap, dt: numbers) {
     // Instantiate cache vars
     if (this.camFree.translatevect === undefined) {
       this.camFree.translatevect = new THREE.Vector3();
@@ -242,7 +258,7 @@ export class ThreeDeeView {
     }
   }
 
-  // Makes boxes at all heightmap points
+  /** Put boxes at all heightmap points */
   showHeightmap() {
     // Makes
     let t = this.engine.terrain;

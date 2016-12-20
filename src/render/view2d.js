@@ -4,6 +4,7 @@
 
 import {Engine} from "../game-engine/engine";
 
+// NOTE: NOT IN USE, might revamp it at some point to show algorithms
 // Base class for 2D canvas views
 export class MapView {
   constructor(engine, canvas) {

@@ -18,7 +18,11 @@ const KEYS = {
   32: " ",
 }
 
+/**
+ * Convenience class to keep track of key presses by saving them in state
+ */
 export class KeyMap {
+  /** Initialize and add event handlers */
   constructor() {
     this.status = {};
 
@@ -32,15 +36,15 @@ export class KeyMap {
     window.addEventListener('keydown', (ev)=>{processkey(ev.keyCode, 1)});
     window.addEventListener('keyup', (ev)=>{processkey(ev.keyCode, 0)});
   }
-
-  get(key) {
+  /** Returns 0 or 1 depending on if key is pressed */
+  get(key: String) : number {
     // Return 0 for easy calcs
     return this.status[key] || 0;
   }
-
+  /** Resets key state to 0 */
   reset(key) {
     if (this.status[key]) {
-      this.status[key] = false;
+      this.status[key] = 0;
     }
   }
 }

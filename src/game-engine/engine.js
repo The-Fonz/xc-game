@@ -5,8 +5,15 @@
 import {Terrain} from "./terrain";
 import {Paraglider} from "./paraglider";
 
+/**
+  * Coordinates interactions between different game elements,
+  * like Terrain and Paraglider objects
+  */
 export class Engine {
-  constructor(terrain, config) {
+  /**
+   * Needs to know about Terrain and config
+   */
+  constructor(terrain: Terrain, config: Object) {
     this.terrain = terrain;
     this.config = config;
     // Init lift and paragliders based on config
@@ -17,8 +24,10 @@ export class Engine {
       this.paragliders.push(new Paraglider(pos.x, pos.y, pos.z));
     }
   }
-
-  update(dt) {
+  /**
+   * Process interactions between game elements with timestep dt
+   */
+  update(dt: number) {
     dt = dt * this.config.timeMultiplier || 1;
     // Update paragliders
     for (var i=0; i<this.paragliders.length; i++) {

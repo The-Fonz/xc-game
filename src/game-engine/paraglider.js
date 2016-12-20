@@ -4,6 +4,7 @@
 
 import * as THREE from "three";
 
+/** Represents one paraglider, user or AI-controlled */
 export class Paraglider {
   /**
    * Initialize pg at position x,y,z
