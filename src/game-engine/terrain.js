@@ -11,8 +11,13 @@ export class Terrain {
     this.heightmapvscale = heightmapvscale;
   }
 
-  groundlevel(vect) {
-    // Return height at planar projection of vector
+  /**
+   * Get height at x,z coordinates of THREE.Vector3
+   * (3D vector for easy interaction with other classes)
+   * @param {THREE.Vector3} vect Some vector
+   * @returns {number} Height of ground, or NaN if out of map area
+   */
+  getHeight(vect) {
     // TODO: don't use nearest but linearly interpolate
     let i = Math.round(vect.x / this.hscale);
     let j = Math.round(vect.z / this.hscale);
@@ -20,11 +25,11 @@ export class Terrain {
       return this.heightmap[j][i] * this.heightmapvscale * this.vscale;
     } catch (e) {
       // Out of map area
-      return NaN
+      return NaN;
     }
   }
 
-  gradient(vect) {
+  getGradient(vect) {
     // Return gradient at planar projection of vector
   }
 }

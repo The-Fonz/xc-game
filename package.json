@@ -10,11 +10,12 @@
     "three": "*"
   },
   "devDependencies": {
+    "babel-plugin-transform-flow-strip-types": "^6.21.0",
     "babel-preset-es2015": "*",
-    "browserify": "*",
-    "watchify": "*",
     "babelify": "*",
-    "http-server": "*"
+    "browserify": "*",
+    "http-server": "*",
+    "watchify": "*"
   },
   "private": true,
   "license": "GPLV2"

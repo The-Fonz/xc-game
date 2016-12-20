@@ -15,10 +15,12 @@ import {KeyMap} from './utils/input';
 var BASICCONFIG = {
   "Engine": {
     "paragliders": [],
+    // Land when pg's centroid is this close to ground. Depends on 3D model
+    "pgOffsetY": 5,
     // Speed up simulation by this multiplication factor
     // Does NOT influence steering or camera movements,
     // just the pg speed
-    "timeMultiplier": 10,
+    "timeMultiplier": 100,
   },
   "Air": {
   },

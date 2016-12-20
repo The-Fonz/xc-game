@@ -5,7 +5,10 @@
 import * as THREE from "three";
 
 export class Paraglider {
-  constructor(x, y, z) {
+  /**
+   * Initialize pg at position x,y,z
+   */
+  constructor(x: number, y: number, z: number) {
     this.pos = new THREE.Vector3(x,y,z);
     // For caching purposes, gets recalculated in this.increment()
     this.speed = new THREE.Vector3();
@@ -22,17 +25,30 @@ export class Paraglider {
       {'vhor': 15, 'vvert': -15/9, 'steeringSensitivity': 2},
       {'vhor': 18, 'vvert': -18/7, 'steeringSensitivity': 1},
     ];
+    this.landed = false;
   }
-  increment(dt) {
-    // Construct speed vector
-    let perf = this.performance[this.speedstate];
-    this.speed.set(0,perf.vvert,perf.vhor);
+  /**
+   * Increment by timestep dt (seconds)
+   */
+  increment(dt: number) {
+    // Always set rotation, regardless of if we've landed or not
     this.rotation.set(0,this.heading,0);
-    this.speed.applyEuler(this.rotation);
-    // Only changes position, not spd
-    this.pos.addScaledVector(this.speed, dt);
+    if (!this.landed) {
+      // Construct speed vector
+      let perf = this.performance[this.speedstate];
+      this.speed.set(0,perf.vvert,perf.vhor);
+      this.speed.applyEuler(this.rotation);
+      // Only changes position, not spd
+      this.pos.addScaledVector(this.speed, dt);
+    } else {
+      this.speed.set(0,0,0);
+      // Walk if doing vol-biv sim
+    }
   }
-  input(dt, keymap) {
+  /**
+   * Process player inputs
+   */
+  input(dt: number, keymap: KeyMap) {
     let k = keymap.status;
     // Steering speed in rad/s
     let steeringSensitivity =
@@ -50,6 +66,23 @@ export class Paraglider {
     // Depress keys
     k.ArrowUp = false;
     k.ArrowDown = false;
+  }
+  /**
+   * Sets `this.landed` to `true` if below groundlevel
+   * @param offset Height from pg centroid to its lowest point
+   */
+  checkLanded(terrain: Terrain, offset: number) {
+    if (terrain.getHeight(this.pos) + offset > this.pos.y) {
+      this.landed = true;
+      // TODO: Notify other components that we've landed!
+    }
+  }
+  /**
+   * Avoid terrain by projecting vector
+   * @param {Terrain} terrain Terrain object
+   */
+  avoidTerrain(terrain) {
+
   }
   autopilot(dt) {}
 }

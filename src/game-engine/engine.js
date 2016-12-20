@@ -22,6 +22,12 @@ export class Engine {
     dt = dt * this.config.timeMultiplier || 1;
     // Update paragliders
     for (var i=0; i<this.paragliders.length; i++) {
+      let pg = this.paragliders[i];
+      // Check if landed
+      pg.checkLanded(this.terrain, this.config.pgOffsetY);
+      // Do terrain collision avoidance
+      pg.avoidTerrain(this.terrain, this.config.pgOffsetY);
+      // Increment position
       this.paragliders[i].increment(dt);
     }
   }

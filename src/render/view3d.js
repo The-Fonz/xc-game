@@ -49,8 +49,8 @@ export class ThreeDeeView {
         pg.pos.x+", y="+pg.pos.y+", z="+pg.pos.z);
       //TODO: load different pgmeshes based on pg config, to have some variation
       let pggeom = loader.parse(pgmodels[0]).geometry;
-      let pgmat  = new THREE.MeshBasicMaterial(
-        {color: 0x888888, side: THREE.DoubleSide, shading: THREE.FlatShading});
+      let pgmat  = new THREE.MeshStandardMaterial(
+        {color: 0x888888, side: THREE.DoubleSide, shading: THREE.FlatShading, roughness: 0.55, metalness: 0.2});
       pg.mesh = new THREE.Mesh(pggeom, pgmat);
       pg.mesh.position.set(pg.pos.x, pg.pos.y, pg.pos.z);
       console.log(pg.mesh)
