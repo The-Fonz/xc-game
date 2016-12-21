@@ -43,3 +43,6 @@ bundle.js
 *.ignore.*
 
 *.pyc
+
+# Can be generated from source files
+static/icons.svg

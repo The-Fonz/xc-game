@@ -2,9 +2,12 @@
   "name": "xc-game",
   "version": "0.0.0",
   "scripts": {
-    "build": "browserify  --debug src/main.js -o static/bundle.js -t babelify",
-    "postbuild": "uglifyjs static/bundle.js -o static/bundle.js",
-    "watch": "watchify -v --debug src/main.js -o static/bundle.js -t babelify",
+    "build": "npm-run-all --parallel build:*",
+    "build:js": "browserify  --debug src/main.js -o static/bundle.js -t babelify",
+    "postbuild:js": "uglifyjs static/bundle.js -o static/bundle.js",
+    "watch:js": "watchify -v --debug src/main.js -o static/bundle.js -t babelify",
+    "prebuild:icons": "svgo -f static/icons",
+    "build:icons": "svgstore static/icons/*.svg -p 'xc-' -o static/icons.svg",
     "serve": "http-server -c-1 -o"
   },
   "dependencies": {

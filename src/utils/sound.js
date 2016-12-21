@@ -35,7 +35,6 @@ export class VarioTone {
    * @param level Gets rounded to an integer, indicates tone, off if -1
    */
   set(level: number) {
-    console.info(level);
     if (level === -1) {
       this.state.on = false;
       return;

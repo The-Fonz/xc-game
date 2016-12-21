@@ -17,7 +17,7 @@ export const BASICCONFIG = {
       // Dimensionless
       "takeoffGradient": .5,
       // Take off if gradient enough and direction within this much rad
-      "takeoffDirection": 1,
+      "takeoffDirection": 1.3,
       // Horizontal and vertical bounds for walking speed
       "walkingHorizontalSpeed": 3,
       "walkingVerticalSpeed": 2,
@@ -33,6 +33,9 @@ export const BASICCONFIG = {
       "tones": [800, 1300, 1400],
       // Duration of full on/off cycle in seconds
       "durations": [.5, .3, .2],
+    },
+    "Dash": {
+      "targetid": "overlay-dash",
     },
   },
   "Air": {

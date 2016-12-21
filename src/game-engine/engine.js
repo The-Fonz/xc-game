@@ -5,6 +5,7 @@
 import {Terrain} from "./terrain";
 import {Paraglider} from "./paraglider";
 import {VarioTone} from '../utils/sound';
+import {Dash} from '../overlays/dash';
 
 /**
   * Coordinates interactions between different game elements,
@@ -13,6 +14,8 @@ import {VarioTone} from '../utils/sound';
 export class Engine {
   /**
    * Needs to know about Terrain and config
+   * @param config Contains config for Engine itself and children elements
+   *               like VarioTone, Dash
    */
   constructor(terrain: Terrain, config: Object) {
     this.terrain = terrain;
@@ -29,6 +32,9 @@ export class Engine {
     if (config.VarioTone) {
       this.variotone = new VarioTone(config.VarioTone);
       this.variotone.set(-1);
+    }
+    if (config.Dash) {
+      this.dash = new Dash(config.Dash);
     }
   }
   /**
