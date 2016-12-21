@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "build": "browserify  --debug src/main.js -o static/bundle.js -t babelify",
+    "postbuild": "uglifyjs static/bundle.js -o static/bundle.js",
     "watch": "watchify -v --debug src/main.js -o static/bundle.js -t babelify",
     "serve": "http-server -c-1 -o"
   },

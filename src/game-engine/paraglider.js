@@ -31,6 +31,17 @@ export class Paraglider {
     this.landed = 0;
   }
   /**
+   * Get vertical speed for vario tone usage
+   * @returns -1 if sinking or on ground, a number in [0,1,...] otherwise
+   */
+  getVarioToneValue() {
+    if (this.landed || this.speed.y < 0) {
+      return -1;
+    } else {
+      return Math.floor(this.speed.y);
+    }
+  }
+  /**
    * Increment by timestep dt (seconds)
    */
   increment(dt: number, terrain) {

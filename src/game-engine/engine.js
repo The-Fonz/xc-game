@@ -4,6 +4,7 @@
 
 import {Terrain} from "./terrain";
 import {Paraglider} from "./paraglider";
+import {VarioTone} from '../utils/sound';
 
 /**
   * Coordinates interactions between different game elements,
@@ -24,6 +25,11 @@ export class Engine {
       this.paragliders.push(new Paraglider(pos.x, pos.y, pos.z,
                                            this.config.Paraglider));
     }
+    // Only use if configured
+    if (config.VarioTone) {
+      this.variotone = new VarioTone(config.VarioTone);
+      this.variotone.set(-1);
+    }
   }
   /**
    * Process interactions between game elements with timestep dt
@@ -42,7 +48,11 @@ export class Engine {
       // Do terrain collision avoidance
       pg.avoidTerrain(this.terrain);
       // Increment position
-      this.paragliders[i].increment(dt, this.terrain);
+      pg.increment(dt, this.terrain);
+      // Set vario tone for player
+      if (i===0) {
+        this.variotone.set(pg.getVarioToneValue());
+      }
     }
   }
 }
