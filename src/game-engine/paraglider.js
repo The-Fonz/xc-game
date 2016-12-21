@@ -50,29 +50,28 @@ export class Paraglider {
     } else {
       // Walk
       if (terrain && this.walk) {
-        this.speed.set(0,0,1);
+        this.speed.set(0,0,this.walk);
         this.speed.applyEuler(this.rotation);
         // Check if not going up too fast
         // If so, iteratively find max. horizontal distance we can walk
         // Binary search might be more precise and efficient
-        let walkSpd = this.walk * this.config.walkingHorizontalSpeed;
+        let hdist = dt * this.config.walkingHorizontalSpeed;
         let newHeight = 0;
-        let hdist = walkSpd * dt;
-        console.log('hdist '+hdist)
         do {
           // Reset first
           c.newPos.copy(this.pos);
           c.newPos.addScaledVector(this.speed, hdist);
           newHeight = terrain.getHeight(c.newPos) + this.config.offsetY||0;
-          console.log("hdist "+hdist+" newHeight "+newHeight+" old "+this.pos.y);
+          c.newPos.y = newHeight;
+          // console.log("hdist "+hdist+" newHeight "+newHeight+" old "+this.pos.y);
           hdist *= .7;
-          if (hdist < .1) {
+          if (hdist < .05) {
             console.error("No possible walking speed found");
+            break;
           }
         } while (newHeight > this.pos.y + dt*this.config.walkingVerticalSpeed);
-        console.log("Walking speed limited to "+hdist);
+        // console.log("Walking speed limited to "+hdist);
         this.pos.copy(c.newPos);
-        this.pos.y = terrain.getHeight(this.pos);
       }
     }
   }

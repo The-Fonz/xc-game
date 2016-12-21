@@ -65,6 +65,8 @@ if (document.body.id === "terrain-load") {
   config.ThreeDeeView.axishelper = 3000;
   config.ThreeDeeView.flyaround = true;
 
+  config.ThreeDeeView.cameras = [{'type': 'free'}];
+
   l("Loading resources...");
 
   promiseGet("../terrainmaker/grandcanyon.ignore.json")
@@ -143,6 +145,7 @@ class Game {
       if (blur === false) {
         if (pgmodels) {
           e.paragliders[0].input(dt, km);
+          v.updatePg();
         }
         // Switch camera
         if (km.get(" ")) {
@@ -151,7 +154,6 @@ class Game {
         }
         v.cam(km, dt, e.paragliders[0]);
         e.update(dt);
-        v.updatePg();
         // l("animating");
         v.render();
       }
