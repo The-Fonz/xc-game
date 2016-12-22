@@ -55,9 +55,14 @@ export class Engine {
       pg.avoidTerrain(this.terrain);
       // Increment position
       pg.increment(dt, this.terrain);
-      // Set vario tone for player
+      // Set vario tone and dash for player
       if (i===0) {
-        this.variotone.set(pg.getVarioToneValue());
+        if (this.variotone) {
+          this.variotone.set(pg.getVarioToneValue());
+        }
+        if (this.dash) {
+          this.dash._update(pg);
+        }
       }
     }
   }

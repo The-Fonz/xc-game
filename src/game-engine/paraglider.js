@@ -42,6 +42,14 @@ export class Paraglider {
     }
   }
   /**
+   * Get step of bar pg is on for use in e.g. dashboard
+   * @returns {number} -1,0,1,2 for walk, trim, first, second step
+   */
+  getSpeedbarStep() {
+    if (this.landed) return -1;
+    return this.speedstate;
+  }
+  /**
    * Increment by timestep dt (seconds)
    */
   increment(dt: number, terrain) {
