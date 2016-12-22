@@ -15,11 +15,16 @@ export class ThreeDeeView {
     this.engine = engine;
     this.config = config;
 
+    this.state = {
+      // Points to 0,0,0
+      sunposition: new THREE.Vector3(0,300,-100),
+    };
+
     this.scene = new THREE.Scene();
 
   	this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, config.clippingplane );
 
-  	this.renderer = new THREE.WebGLRenderer();
+  	this.renderer = new THREE.WebGLRenderer({antialias: true});
   	this.renderer.setSize( window.innerWidth, window.innerHeight );
 
     // SCATTERED LIGHT
@@ -28,8 +33,11 @@ export class ThreeDeeView {
 
     // SUN
     var directionalLight = new THREE.DirectionalLight( 0xFAFF95, 1 );
-    directionalLight.position.set( 0, 1, 0 );
+    directionalLight.position.copy(this.state.sunposition);
     this.scene.add( directionalLight );
+    // Enable automatic updating of target's matrixWorld
+    this.scene.add( directionalLight.target );
+    this.sun = directionalLight;
 
     // instantiate a loader
     var loader = new THREE.JSONLoader();
@@ -43,6 +51,7 @@ export class ThreeDeeView {
     let vscale = sceneryjson.xcgame.vscale;
     scenerymesh.scale.set(hscale, vscale, hscale);
     this.scene.add( scenerymesh );
+    this.scenerymesh = scenerymesh;
 
     // Add pg meshes to paraglider objects
     // Kind of dirty but avoids having to keep extra objects in sync
@@ -55,7 +64,6 @@ export class ThreeDeeView {
         {color: 0x888888, side: THREE.DoubleSide, shading: THREE.FlatShading, roughness: 0.55, metalness: 0.2});
       pg.mesh = new THREE.Mesh(pggeom, pgmat);
       pg.mesh.position.set(pg.pos.x, pg.pos.y, pg.pos.z);
-      console.log(pg.mesh)
       this.scene.add(pg.mesh);
     }
 
@@ -67,7 +75,7 @@ export class ThreeDeeView {
   /** Read pg position from engine and update their mesh positions */
   updatePg() {
     for (var pg of this.engine.paragliders) {
-      pg.mesh.position.set(pg.pos.x, pg.pos.y, pg.pos.z);
+      pg.mesh.position.copy(pg.pos);
       pg.mesh.rotation.set(0,0,0,'YZX');
       pg.mesh.rotation.y = pg.heading;
       pg.mesh.rotation.z = pg.bank;
@@ -86,6 +94,48 @@ export class ThreeDeeView {
       this.camera.zoom = .95*this.camera.zoom + .05*c.targetZoom;
       this.camera.updateProjectionMatrix();
     }
+  }
+
+  /**
+   * Set all necessary properties on renderer and light to allow
+   * casting shadows.
+   */
+  _initShadow(pg) {
+    l("Initializing shadows...");
+    // Only let passed pg cast shadow
+    pg.mesh.castShadow = true;
+    this.scenerymesh.receiveShadow = true;
+    this.renderer.shadowMapEnabled = true;
+    // Show wing shadow if no back faces are used
+    this.renderer.shadowMap.renderReverseSided = THREE.CullFaceNone;
+    this.renderer.shadowMapSoft = true;
+    this.sun.castShadow = true;
+    this.sun.shadowDarkness = .5;
+    this.sun.shadowCameraNear    = 20;
+    this.sun.shadowCameraFar     = 2000;
+    // Set bigger than bounding box
+    this.sun.shadowCameraLeft    = -100;
+    this.sun.shadowCameraRight   =  100;
+    this.sun.shadowCameraTop     =  100;
+    this.sun.shadowCameraBottom  = -100;
+    // Set to smaller size for less performance hit
+    this.sun.shadow.mapSize.set(256,256);
+  }
+
+  /**
+   * Update shadow camera position to cast shadow on one specific pg,
+   * initialize if not yet initialized.
+   */
+  updateShadow(pg) {
+    let c = this.updateShadow.state;
+    if (c === undefined) {
+      this.updateShadow.state = {};
+      this._initShadow(pg);
+    }
+    this.sun.position.addVectors(pg.pos, this.state.sunposition);
+    // Keep some distance from pg
+    this.sun.target.position.lerpVectors(
+      pg.pos, this.sun.position, .9);
   }
 
   /** Apply configuration object */
@@ -201,7 +251,7 @@ export class ThreeDeeView {
       };
       // We don't use Z rotation
       this.camRelative.cacheVars.rotateEuler.z = 0;
-      console.info("Rotate with a,s,d,w and zoom with f,v");
+      l("Rotate with a,s,d,w and zoom with f,v");
     }
     let c = this.camRelative.cacheVars;
     // Reset to look into Z direction, keep length for zoom to work

@@ -45,7 +45,7 @@ export const BASICCONFIG = {
   "ThreeDeeView": {
     "clippingplane": 3000,
     "fog": {"hex": 0xFFFFFF, "near": 400, "far": 3000},
-    "clearcolor": "white",
+    "clearcolor": "#888",
     // Different meshes to be used in this.Engine.paragliders
     "pgmeshes": {
       "simplepg": "../obj/pgmodels/simplepg.json",

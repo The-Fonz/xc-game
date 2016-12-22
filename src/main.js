@@ -101,6 +101,7 @@ class Game {
         if (pgmodels) {
           e.paragliders[0].input(dt, km);
           v.updatePg();
+          v.updateShadow(e.paragliders[0]);
         }
         // Switch camera
         if (km.get(" ")) {
