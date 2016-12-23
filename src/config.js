@@ -37,6 +37,24 @@ export const BASICCONFIG = {
     "Dash": {
       "targetid": "overlay-dash",
     },
+    "Air": {
+      // There is a constant pool of this many thermals in the scene
+      "nthermals": 100,
+      // Sample this many random positions for new thermal creation
+      "nthermalsamples": 100,
+      "Thermal": {
+        // Min/max *sec* for uniform distribution
+        "lifeCycle": [30, 180],
+        // Min/max for uniform distribution
+        "radius": [200, 400],
+        // Min/max for uniform distribution
+        "strength": [1,4],
+        // Min/max for uniform distribution
+        "cloudbase": [1100, 1200],
+        "maxCloudWidth": 320,
+        "maxCloudHeight": 180,
+      },
+    },
   },
   "Air": {
   },

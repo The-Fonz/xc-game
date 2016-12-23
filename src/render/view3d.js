@@ -58,13 +58,15 @@ export class ThreeDeeView {
     for (var pg of this.engine.paragliders) {
       l("view3d: instantiating paraglider at position x="+
         pg.pos.x+", y="+pg.pos.y+", z="+pg.pos.z);
+      // Namespace the data we attach to the pg model
+      pg.meta.view3d = {};
       //TODO: load different pgmeshes based on pg config, to have some variation
       let pggeom = loader.parse(pgmodels[0]).geometry;
       let pgmat  = new THREE.MeshStandardMaterial(
         {color: 0x888888, side: THREE.DoubleSide, shading: THREE.FlatShading, roughness: 0.55, metalness: 0.2});
-      pg.mesh = new THREE.Mesh(pggeom, pgmat);
-      pg.mesh.position.set(pg.pos.x, pg.pos.y, pg.pos.z);
-      this.scene.add(pg.mesh);
+      pg.meta.view3d.mesh = new THREE.Mesh(pggeom, pgmat);
+      pg.meta.view3d.mesh.position.set(pg.pos.x, pg.pos.y, pg.pos.z);
+      this.scene.add(pg.meta.view3d.mesh);
     }
 
     this.applyConfig(config);
@@ -75,10 +77,10 @@ export class ThreeDeeView {
   /** Read pg position from engine and update their mesh positions */
   updatePg() {
     for (var pg of this.engine.paragliders) {
-      pg.mesh.position.copy(pg.pos);
-      pg.mesh.rotation.set(0,0,0,'YZX');
-      pg.mesh.rotation.y = pg.heading;
-      pg.mesh.rotation.z = pg.bank;
+      pg.meta.view3d.mesh.position.copy(pg.pos);
+      pg.meta.view3d.mesh.rotation.set(0,0,0,'YZX');
+      pg.meta.view3d.mesh.rotation.y = pg.heading;
+      pg.meta.view3d.mesh.rotation.z = pg.bank;
     }
     if (this.updatePg.cacheVars === undefined) {
       this.updatePg.cacheVars = {
@@ -103,21 +105,20 @@ export class ThreeDeeView {
   _initShadow(pg) {
     l("Initializing shadows...");
     // Only let passed pg cast shadow
-    pg.mesh.castShadow = true;
+    pg.meta.view3d.mesh.castShadow = true;
     this.scenerymesh.receiveShadow = true;
-    this.renderer.shadowMapEnabled = true;
+    this.renderer.shadowMap.enabled = true;
     // Show wing shadow if no back faces are used
     this.renderer.shadowMap.renderReverseSided = THREE.CullFaceNone;
     this.renderer.shadowMapSoft = true;
     this.sun.castShadow = true;
-    this.sun.shadowDarkness = .5;
-    this.sun.shadowCameraNear    = 20;
-    this.sun.shadowCameraFar     = 2000;
+    this.sun.shadow.camera.near    = 20;
+    this.sun.shadow.camera.far     = 2000;
     // Set bigger than bounding box
-    this.sun.shadowCameraLeft    = -100;
-    this.sun.shadowCameraRight   =  100;
-    this.sun.shadowCameraTop     =  100;
-    this.sun.shadowCameraBottom  = -100;
+    this.sun.shadow.camera.left    = -100;
+    this.sun.shadow.camera.right   =  100;
+    this.sun.shadow.camera.top     =  100;
+    this.sun.shadow.camera.bottom  = -100;
     // Set to smaller size for less performance hit
     this.sun.shadow.mapSize.set(256,256);
   }

@@ -4,7 +4,11 @@
 
 import * as THREE from "three";
 
-/** Represents one paraglider, user or AI-controlled */
+/**
+ * Represents one paraglider, user or AI-controlled. Other classes can attach
+ * and keep track of metadata in the `.meta` attribute. They must namespace
+ * their variables by lowercase class name, e.g. `.meta.air.*`.
+ */
 export class Paraglider {
   /**
    * Initialize pg at position x,y,z
@@ -29,6 +33,8 @@ export class Paraglider {
       {'vhor': 18, 'vvert': -18/7, 'steeringSensitivity': 1},
     ];
     this.landed = 0;
+    // Place for external methods to attach and keep track of properties.
+    this.meta = {};
   }
   /**
    * Get vertical speed for vario tone usage
@@ -50,19 +56,29 @@ export class Paraglider {
     return this.speedstate;
   }
   /**
+   * Set air vector
+   */
+  setAirVector(x,y,z) {
+    if (this.airVector === undefined) {
+      this.airVector = new THREE.Vector3();
+    }
+    this.airVector.set(x,y,z);
+  }
+  /**
    * Increment by timestep dt (seconds)
    */
   increment(dt: number, terrain) {
-    let c = this.increment.cacheVars;
-    if (c === undefined) {
-      c = {newPos: new THREE.Vector3()};
+    if (this.increment.cacheVars === undefined) {
+      this.increment.cacheVars = {newPos: new THREE.Vector3()};
     }
+    let c = this.increment.cacheVars;
     // Always set rotation, regardless of if we've landed or not
     this.rotation.set(0,this.heading,0);
     if (this.landed !== 1) {
       // Construct speed vector
       let perf = this.performance[this.speedstate];
       this.speed.set(0,perf.vvert,perf.vhor);
+      if (this.airVector) this.speed.add(this.airVector);
       this.speed.applyEuler(this.rotation);
       // Only changes position, not spd
       this.pos.addScaledVector(this.speed, dt);
@@ -149,13 +165,14 @@ export class Paraglider {
    * Check if terrain steep enough to take off, and if so, do it
    */
   checkTakeoff(terrain: Terrain) {
-    let c = this.checkTakeoff.cacheVars;
-    if (c === undefined) {
-      c = {
+    if (this.checkTakeoff.cacheVars === undefined) {
+      this.checkTakeoff.cacheVars = {
         gradient: new THREE.Vector3(),
         zaxis: new THREE.Vector3(0,0,1),
       };
     }
+    let c = this.checkTakeoff.cacheVars;
+
     terrain.getGradient(c.gradient, this.pos);
     let steepness = c.gradient.length();
     let gradientDirection = Math.atan(c.gradient.x / c.gradient.z);

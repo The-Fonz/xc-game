@@ -19,20 +19,33 @@ export class Terrain {
     this.hscale = hscale;
     this.vscale = vscale;
     this.heightmapvscale = heightmapvscale;
+    // Static property, [minX, minZ, maxX, maxZ]
+    this.extent = [0, 0,
+                   this.heightmap[0].length * this.hscale,
+                   this.heightmap.length * this.hscale];
   }
 
   /**
    * Get linearly interpolated height at x,z coordinates of THREE.Vector3
    * @param {THREE.Vector3} vect Some vector in 3D world coordinates, for easy
    *                             interaction with other classes
-   * @returns {number} Height of ground, or NaN if out of map area
+   * @returns See this.getHeightNumber
    */
   getHeight(vect) {
+    return this.getHeightNumber(vect.x, vect.z)
+  }
+  /**
+   * Get height with normal number coords
+   * @param x World x-coord
+   * @param z World Z-coord
+   * @returns {number} Height of ground, or NaN if out of map area
+   */
+  getHeightNumber(x: number, z: number) {
     let h = this.heightmap;
-    let [i1, i2, j1, j2] = this._gridcoords(vect);
+    let [i1, i2, j1, j2] = this._gridcoordsNumber(x,z);
     // Relative coords within rectangle
-    let x = (vect.x % this.hscale) / this.hscale;
-    let z = (vect.z % this.hscale) / this.hscale;
+    x = (x % this.hscale) / this.hscale;
+    z = (z % this.hscale) / this.hscale;
     try {
       return this._interpolate4(
         [h[j1][i1], h[j1][i2], h[j2][i1], h[j2][i2]],
@@ -45,9 +58,16 @@ export class Terrain {
   }
 
   /**
+   * Calculate surface normal
+   */
+  getNormal() {
+
+  }
+
+  /**
    * Calculate surface gradient, point towards middle of map if outside of it
-   * @param pos Position in 3D world coordinates
    * @param out 3D vector to store result in (y is 0)
+   * @param pos Position in 3D world coordinates
    */
   getGradient(out: THREE.Vector3, pos: THREE.Vector3) {
     let [i1, i2, j1, j2] = this._gridcoords(pos);
@@ -101,6 +121,12 @@ export class Terrain {
             Math.ceil (vect.x / this.hscale),
             Math.floor(vect.z / this.hscale),
             Math.ceil (vect.z / this.hscale)];
+  }
+  _gridcoordsNumber(x: number, z: number) {
+    return [Math.floor(x / this.hscale),
+            Math.ceil (x / this.hscale),
+            Math.floor(z / this.hscale),
+            Math.ceil (z / this.hscale)];
   }
   /** Internal method for linear interpolation between 4 grid points
    * @param a Ordered as such: [z1,x1] [z1,x2] [z2,x1] [z2,x2]

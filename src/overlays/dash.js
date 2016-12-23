@@ -104,7 +104,7 @@ export class Dash {
   /** Update dash elements with pg state */
   _update(pg) {
     let step = pg.getSpeedbarStep();
-    // Only update if we need to!
+    // Only touch DOM if we need to!
     if (step !== this.state.step) {
       for (let i=0; i < SPEED_STEP_CLASSES.length; i++) {
         let cl = `hide-${SPEED_STEP_CLASSES[i]}`;

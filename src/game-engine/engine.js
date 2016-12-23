@@ -2,6 +2,7 @@
  * Takes care of updating entire environment model, includes AI
  */
 
+import {Air} from "./air";
 import {Terrain} from "./terrain";
 import {Paraglider} from "./paraglider";
 import {VarioTone} from '../utils/sound';
@@ -36,12 +37,20 @@ export class Engine {
     if (config.Dash) {
       this.dash = new Dash(config.Dash);
     }
+    if (config.Air) {
+      this.air = new Air(this.terrain, this.config.Air);
+    }
   }
   /**
    * Process interactions between game elements with timestep dt
    */
   update(dt: number) {
     dt = dt * this.config.timeMultiplier || 1;
+    // Update air
+    if (this.air) {
+      this.air.incrementAir(dt);
+      this.air.incrementThermalIntersections(this.paragliders);
+    }
     // Update paragliders
     for (var i=0; i<this.paragliders.length; i++) {
       let pg = this.paragliders[i];
@@ -64,6 +73,13 @@ export class Engine {
           this.dash._update(pg);
         }
       }
+      // Update climb rate because of thermals
+      let maxClimb = 0;
+      for (let thermal of pg.meta.air.intersectingThermalList) {
+        let climb = thermal.getUpdraft(pg.pos);
+        if (climb > maxClimb) maxClimb = climb;
+      }
+      pg.setAirVector(0,maxClimb,0);
     }
   }
 }
