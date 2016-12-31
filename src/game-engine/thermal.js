@@ -9,7 +9,10 @@ export class Thermal {
   /** This class is meant for re-use in a pool of objects, use `init()` */
   constructor() {
     this.active = false;
+    // Internal cache
     this.cacheVars = {};
+    // External information
+    this.meta = {};
   }
   /**
    * Sets position, radius and strength of thermal.
@@ -106,6 +109,7 @@ export class Thermal {
    */
   getUpdraft(pos: THREE.Vector3) {
     if (! this.active) return 0;
+    if (pos.y > (this.cloudbase - this.config.cloudbaseClimbOffset)) return 0;
     if (this.cacheVars.getVelocity === undefined) {
       this.cacheVars.getVelocity = {
         // Vectors used for distance comparison in ground plane

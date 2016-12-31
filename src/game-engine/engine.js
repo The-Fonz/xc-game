@@ -9,7 +9,7 @@ import {VarioTone} from '../utils/sound';
 import {Dash} from '../overlays/dash';
 
 /**
-  * Coordinates interactions between different game elements,
+  * Coordinates interactions between low-level game elements,
   * like Terrain and Paraglider objects
   */
 export class Engine {
@@ -29,17 +29,16 @@ export class Engine {
       this.paragliders.push(new Paraglider(pos.x, pos.y, pos.z,
                                            this.config.Paraglider));
     }
-    // Only use if configured
-    if (config.VarioTone) {
-      this.variotone = new VarioTone(config.VarioTone);
-      this.variotone.set(-1);
-    }
-    if (config.Dash) {
-      this.dash = new Dash(config.Dash);
-    }
-    if (config.Air) {
-      this.air = new Air(this.terrain, this.config.Air);
-    }
+  }
+  initAir(cfg) {
+    this.air = new Air(this.terrain, cfg);
+  }
+  initVarioTone(cfg) {
+    this.variotone = new VarioTone(cfg);
+    this.variotone.set(-1);
+  }
+  initDash(cfg) {
+    this.dash = new Dash(cfg);
   }
   /**
    * Process interactions between game elements with timestep dt

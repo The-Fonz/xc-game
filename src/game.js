@@ -8,7 +8,7 @@ import {ThreeDeeView} from './render/view3d';
 import {KeyMap} from './utils/input';
 import {l} from './utils/logging';
 
-/** Instantiates all game elements */
+/** Handles interaction between high-level game elements */
 export class Game {
   constructor(terrainmodel, pgmodels, config){
     // Load terrain, engine, view (in that order)
@@ -22,6 +22,9 @@ export class Game {
       terrainmodel.xcgame.heightmapvscale);
     l("Retrieving vectors...");
     var e = new Engine(t, config.Engine);
+    e.initVarioTone(config.VarioTone);
+    e.initAir(config.Air);
+    e.initDash(config.Dash);
     l("Generating triangles...");
     var v = new ThreeDeeView(e, terrainmodel, pgmodels, config.ThreeDeeView);
 
@@ -50,6 +53,7 @@ export class Game {
           e.paragliders[0].input(dt, km);
           v.updatePg();
           v.updateShadow(e.paragliders[0]);
+          v.updateClouds(e.air);
         }
         // Switch camera
         if (km.get(" ")) {

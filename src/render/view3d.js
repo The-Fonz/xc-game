@@ -74,6 +74,31 @@ export class ThreeDeeView {
   	document.body.appendChild( this.renderer.domElement );
   }
 
+  /** Update cloud positions */
+  updateClouds(air) {
+    for (var t of air.thermals) {
+      // Attach meta info to Thermal, add cloudmesh to
+      if (!t.meta.view3d) {
+        t.meta.view3d = {
+          // Instantiate with sane values, we'll update them anyway
+          cloudGeom: new THREE.CylinderGeometry(.8, 1, 1, 5),
+          cloudMat: new THREE.MeshStandardMaterial(
+              {color: this.config.cloudColor, side: THREE.DoubleSide,
+               shading: THREE.FlatShading, roughness: 0.55, metalness: 0.2}),
+        };
+        t.meta.view3d.cloudMesh = new THREE.Mesh(t.meta.view3d.cloudGeom, t.meta.view3d.cloudMat);
+        this.scene.add(t.meta.view3d.cloudMesh);
+      }
+      // Hide cloudMesh if necessary
+      t.meta.view3d.cloudMesh.visible = t.active;
+      // Adjust cylinder shape on Object3D, not on CylinderGeometry
+      t.meta.view3d.cloudMesh.scale.set(
+        t.cloudWidth, t.cloudHeight, t.cloudWidth);
+      // Set position based on thermal position
+      t.meta.view3d.cloudMesh.position.set(t.pos.x, t.cloudbase, t.pos.z);
+    }
+  }
+
   /** Read pg position from engine and update their mesh positions */
   updatePg() {
     for (var pg of this.engine.paragliders) {
