@@ -18,12 +18,21 @@ const DASH_TEMPLATE = `
 #dash-speedbar-svg {
   width: 150px;
   height: 100px;
-}
-#dash-speedbar-svg {
   opacity: .5;
   transition: opacity .2s;
 }
 #dash-speedbar-svg:hover {
+  opacity: .8;
+}
+.dash-vario {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: 20px;
+}
+#dash-vario-svg {
+  width: 100px;
+  height: 300px;
   opacity: .8;
 }
 </style>
@@ -32,7 +41,9 @@ const DASH_TEMPLATE = `
   <svg id="dash-speedbar-svg"></svg>
 </div>
 <div class="dash-groundspeed"></div>
-<div class="dash-vario"></div>
+<div class="dash-vario">
+  <svg id="dash-vario-svg"></svg>
+</div>
 `;
 
 import Snap from 'snapsvg';
@@ -44,25 +55,57 @@ export class Dash {
     this.config = config;
     this.target = document.getElementById(this.config.targetid);
     this.target.innerHTML = DASH_TEMPLATE;
-    this.svg = Snap('#dash-speedbar-svg');
+    this.spd_svg = Snap('#dash-speedbar-svg');
+    this.var_svg = Snap('#dash-vario-svg');
     this._draw();
     // Keep state to avoid updating DOM if not necessary
-    this.state = {step: null};
-    // Allow increasing speedbar step by clicking widget
-    this.target.querySelector('.dash-speedbar').addEventListener('mousedown',
-      (ev)=>{
-        // TODO: Set forward arrow in keymap, or find some cleaner way
-        // to be able to click icon and increase speedbar setting
-      });
+    this.state = {
+      // Speedbar step
+      step: null,
+      // Vario level
+      level: 0,
+    };
   }
+  /** Might split speedbar, vario up into separate classes at some point */
   _draw() {
-    this.arrow1 = this.svg.polygon(0,100,75,40,150,100).attr({
+    this._drawSpeedbar();
+    this._drawVario();
+  }
+  _drawSpeedbar() {
+    this.arrow1 = this.spd_svg.polygon(0,100,75,40,150,100).attr({
       "stroke-width": 3,
     });
-    this.arrow2 = this.svg.polygon(0,60,75,0,150,60).attr({});
+    this.arrow2 = this.spd_svg.polygon(0,60,75,0,150,60).attr({});
+  }
+  _drawVario() {
+    // Store levels indicators in this variable
+    this.svg_levels = [];
+    // Middle in pixels
+    const middle = 150;
+    const lineHeight = 30;
+    // Zero line
+    this.var_svg.line(60,10+middle, 100,10+middle).attr({
+      "stroke": "#dedede",
+      "stroke-width": 4,
+    });
+    let nLevels = this.config.varioLevels*2+1;
+    let offset = middle - this.config.varioLevels * lineHeight;
+    for (var i=0; i<nLevels; i++) {
+      let p = this.var_svg.polygon(0,offset, 40,offset,
+        50,10+offset, 40,20+offset, 0,20+offset).attr({
+        "stroke": "#ccc",
+        "fill": "#fff",
+      });
+      offset += lineHeight;
+      this.svg_levels.push(p);
+    }
   }
   /** Update dash elements with pg state */
   _update(pg) {
+    this._updateSpeedbar(pg);
+    this._updateVario(pg);
+  }
+  _updateSpeedbar(pg) {
     let step = pg.getSpeedbarStep();
     // Only touch DOM if we need to!
     if (step !== this.state.step) {
@@ -79,5 +122,28 @@ export class Dash {
       }
     }
     this.state.step = step;
+  }
+  _updateVario(pg) {
+    // Can be negative, positive or 0
+    let level = Math.round(pg.speed.y);
+    let offset = (this.svg_levels.length-1)/2;
+    if (level !== this.state.level) {
+      // Loop over all, hide or show
+      for (let i=0; i<this.svg_levels.length; i++) {
+        let vis = "hidden";
+        // Classic vario indicator, always show zero level,
+        // fill in positive or negative scale corresponding to climbrate
+        if (i===offset ||
+            level<0 && i>offset && (i-offset)<=-level ||
+            level>0 && i<offset && (offset-i)<level) {
+          console.log(i, level, offset)
+          vis = "visible";
+        }
+        this.svg_levels[i].attr({
+          "visibility": vis,
+        });
+      }
+      this.state.level = level;
+    }
   }
 }

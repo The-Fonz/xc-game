@@ -26,11 +26,12 @@ export class Paraglider {
     this.bank = 0;
     // Performance state and data
     this.speedstate = 0;
+    let s = this.config.speedMultiplier;
     this.performance = [
       // Glide ratio of 11, 9, 7 at trim, half, full speedbar
-      {'vhor': 11, 'vvert': -11/11, 'steeringSensitivity': 6},
-      {'vhor': 15, 'vvert': -15/9, 'steeringSensitivity': 2},
-      {'vhor': 18, 'vvert': -18/7, 'steeringSensitivity': 1},
+      {'vhor': 11*s, 'vvert': -11/11*s, 'steeringSensitivity': 6},
+      {'vhor': 15*s, 'vvert': -15/9*s, 'steeringSensitivity': 2},
+      {'vhor': 18*s, 'vvert': -18/7*s, 'steeringSensitivity': 1},
     ];
     this.landed = 0;
     // Place for external methods to attach and keep track of properties.

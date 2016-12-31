@@ -23,8 +23,8 @@ export class Air {
     for (let i=0; i < config.nthermals; i++) {
       this.thermals.push(new Thermal());
     }
-    // Initialize all thermals
-    this.incrementAir();
+    // Initialize all thermals, make sure to provide dt
+    this.incrementAir(0);
   }
   /**
    * Update all air movements by timestep dt.

@@ -8,10 +8,12 @@ export const BASICCONFIG = {
     "paragliders": [],
     // Speed up simulation by this multiplication factor
     // Does NOT influence steering or camera movements,
-    // just the pg speed
+    // just the engine speed (so pg, air, etc.)
     "timeMultiplier": 30,
     // Nested config because Engine instantiates Paraglider objects
     "Paraglider": {
+      // Go this many times faster
+      "speedMultiplier": 1,
       // Land when pg's centroid is this close to ground. Depends on 3D model
       "offsetY": 15,
       // Dimensionless
@@ -27,6 +29,10 @@ export const BASICCONFIG = {
   },
   "Dash": {
     "targetid": "overlay-dash",
+    // Vario indication for pos or neg, apart from the 0-level
+    "varioLevels": 4,
+    // Scaling vario indication
+    "varioMaxClimbrate": 3,
   },
   "VarioTone": {
     "gain": .02,
@@ -40,18 +46,19 @@ export const BASICCONFIG = {
   },
   "Air": {
     // There is a constant pool of this many thermals in the scene
-    "nthermals": 10,
+    "nthermals": 100,
     // Sample this many random positions for new thermal creation
     "nthermalsamples": 100,
     "Thermal": {
       // Min/max *sec* for uniform distribution
-      "lifeCycle": [30, 180],
+      // Influenced by timeMultiplier
+      "lifeCycle": [400, 1800],
       // Min/max for uniform distribution
       "radius": [200, 400],
       // Min/max for uniform distribution
-      "strength": [1,4],
+      "strength": [2,6],
       // Min/max for uniform distribution
-      "cloudbase": [1000, 1200],
+      "cloudbase": [1100, 1200],
       // How far below cloudbase pg should stop climbing
       "cloudbaseClimbOffset": 200,
       "maxCloudWidth": 320,
