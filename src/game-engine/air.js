@@ -16,6 +16,7 @@ export class Air {
    * Initialize class, needs to know about terrain
    */
   constructor(terrain: Terrain, config: Object) {
+    this.cache = {};
     this.terrain = terrain;
     this.config = config;
     // Instantiate pool of thermals
@@ -24,7 +25,7 @@ export class Air {
       this.thermals.push(new Thermal());
     }
     // Initialize all thermals, make sure to provide dt
-    this.incrementAir(0);
+    this.incrementAir();
   }
   /**
    * Update all air movements by timestep dt.
@@ -34,14 +35,9 @@ export class Air {
    *          times per second that you want to increment each thermal.
    */
   incrementAir(dt: number, m: number) {
+    if (dt === undefined) dt = 0;
     if (m === undefined) m = 1;
-    if (this.incrementAir.cacheVars === undefined) {
-      this.incrementAir.cacheVars = {
-        cached_i: 0,
-      };
-    }
-    let c = this.incrementAir.cacheVars;
-    // Increment and initialize new thermals or refresh inactive ones.
+    // TODO: Increment and initialize new thermals or refresh inactive ones.
     // Check (*m* * total number of thermals) every frame.
     // This lowers workload but still ensures
     // that every thermal is incremented within a short time.
@@ -99,6 +95,14 @@ export class Air {
    * @returns {Array} [x,y] position
    */
   _newThermalPosition(n: number) {
+    if (this.cache._newThermalPosition === undefined) {
+      this.cache._newThermalPosition = {
+        pos: new THREE.Vector3(),
+        grad: new THREE.Vector3(),
+      };
+    }
+    let c = this.cache._newThermalPosition;
+
     let position = [0,0];
     let maxPosition = [0,0];
     let sunstrength = 0;
@@ -112,7 +116,9 @@ export class Air {
         Math.random() * (this.terrain.extent[3] - this.terrain.extent[1]);
 
       // TODO: make dot product of terrain normal and sun normal
-      let sunstrength = 1;
+      c.pos.set(position[0], 0, position[1]);
+      this.terrain.getGradient(c.grad, c.pos);
+      let sunstrength = c.grad.z > 0 ? 1-Math.exp(-c.grad.z): 0;
 
       if (sunstrength > maxSunstrength) {
         maxSunstrength = sunstrength;

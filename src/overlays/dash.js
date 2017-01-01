@@ -136,7 +136,6 @@ export class Dash {
         if (i===offset ||
             level<0 && i>offset && (i-offset)<=-level ||
             level>0 && i<offset && (offset-i)<level) {
-          console.log(i, level, offset)
           vis = "visible";
         }
         this.svg_levels[i].attr({

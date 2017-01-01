@@ -9,7 +9,7 @@ export const BASICCONFIG = {
     // Speed up simulation by this multiplication factor
     // Does NOT influence steering or camera movements,
     // just the engine speed (so pg, air, etc.)
-    "timeMultiplier": 30,
+    "timeMultiplier": 20,
     // Nested config because Engine instantiates Paraglider objects
     "Paraglider": {
       // Go this many times faster
@@ -46,9 +46,9 @@ export const BASICCONFIG = {
   },
   "Air": {
     // There is a constant pool of this many thermals in the scene
-    "nthermals": 100,
+    "nthermals": 10,
     // Sample this many random positions for new thermal creation
-    "nthermalsamples": 100,
+    "nthermalsamples": 10,
     "Thermal": {
       // Min/max *sec* for uniform distribution
       // Influenced by timeMultiplier
@@ -56,7 +56,7 @@ export const BASICCONFIG = {
       // Min/max for uniform distribution
       "radius": [200, 400],
       // Min/max for uniform distribution
-      "strength": [2,6],
+      "strength": [2,4],
       // Min/max for uniform distribution
       "cloudbase": [1100, 1200],
       // How far below cloudbase pg should stop climbing
