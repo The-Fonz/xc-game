@@ -14,8 +14,6 @@ const TASK_MAP_TEMPLATE = `
   padding: 20px;
 }
 #task-map-svg {
-  width: 300px;
-  height: 200px;
   opacity: .7;
   background: rgba(255,255,255,.5);
 }
@@ -42,16 +40,15 @@ export class TaskMap {
     this.task = task;
     let bbox = this.task.getBbox();
     //Figure out how to scale turnpoint display from 0 to 100
-    this.scale = 100 /
-                 (Math.max(...bbox.slice(2,4)) -
-                  Math.min(...bbox.slice(0,2)));
+    let hscale = 167 / (bbox[2]-bbox[0]);
+    let vscale = 100 / (bbox[3]-bbox[1]);
+    this.scale = Math.min(hscale,vscale);
+    // Offset in world coordinates
     this.offset = bbox.slice(0,2);
-    this.offset[0] *= this.scale;
-    this.offset[1] *= this.scale;
     this.svg.attr({
-      viewBox: "-10 -10 120 120",
-      width: 300,
-      height: 300,
+      viewBox: "0 0 167 100",
+      height: 200,
+      width: 200*1.67,
     });
     this._draw();
   }
@@ -60,7 +57,7 @@ export class TaskMap {
     this.svg_tps = [];
     // Turnpoint circle
     for (let tp of this.task.turnpoints) {
-      let x = 100 - (tp.coordinates[0] - this.offset[0])*this.scale;
+      let x = 167 - (tp.coordinates[0] - this.offset[0])*this.scale;
       let y = 100 - (tp.coordinates[2] - this.offset[1])*this.scale;
       let tpcircle = this.svg.circle(x, y, tp.radius*this.scale).attr({
                         fill: "#fff",
@@ -74,7 +71,7 @@ export class TaskMap {
       'innerCircle': this.svg.circle(50,50,5).attr({fill: "black"}),
       'outerCircle': this.svg.circle(50,50,10).attr({fill: "white"}),
     }
-    this.svg_activeTpIndicator.mainCircle = this.svg.rect(-10,-10,110,110).attr({
+    this.svg_activeTpIndicator.mainCircle = this.svg.rect(0,0,167,100).attr({
         visibility: "hidden",
         fill: "green",
         mask: this.svg.g(this.svg_activeTpIndicator.outerCircle,
@@ -84,7 +81,7 @@ export class TaskMap {
     let prevcoords = [];
     this.svg_route = [];
     for (let tp of this.task.turnpoints) {
-      let x = 100 - (tp.coordinates[0] - this.offset[0])*this.scale;
+      let x = 167 - (tp.coordinates[0] - this.offset[0])*this.scale;
       let y = 100 - (tp.coordinates[2] - this.offset[1])*this.scale;
       if (prevcoords[0]) {
         let routeline = this.svg.line(prevcoords[0], prevcoords[1],
@@ -134,8 +131,8 @@ export class TaskMap {
       this.cache.update = {};
     }
     let c = this.cache.update;
-    let x = 100 - pg.pos.x*this.scale+this.offset[0];
-    let y = 100 - pg.pos.z*this.scale+this.offset[1];
+    let x = 167 - (pg.pos.x-this.offset[0])*this.scale;
+    let y = 100 - (pg.pos.z-this.offset[1])*this.scale;
     this.arrow.attr({
       // Set rotation center to 0,0 as it doesn't use it by default (centroid?)
       transform: `t${x},${y} r${180+Snap.deg(-pg.heading)} 0 0`,
@@ -157,7 +154,7 @@ export class TaskMap {
     if (this.task.taskActive &&
         this.task.activeTurnpointIndex !== c.lastTpIndex) {
       let tp = this.task.turnpoints[this.task.activeTurnpointIndex];
-      let x = 100 - (tp.coordinates[0] - this.offset[0])*this.scale;
+      let x = 167 - (tp.coordinates[0] - this.offset[0])*this.scale;
       let y = 100 - (tp.coordinates[2] - this.offset[1])*this.scale;
       this.svg_activeTpIndicator.mainCircle.attr({visibility: "visible"});
       this.svg_activeTpIndicator.innerCircle.attr({cx: x, cy: y, r: tp.radius*this.scale});

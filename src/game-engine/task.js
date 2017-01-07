@@ -2,6 +2,7 @@
  * Task class
  */
 
+import * as THREE from 'three';
 import {l} from '../utils/logging';
 
 /** Handles task flying logic */
@@ -19,7 +20,20 @@ export class Task {
   }
   /** Update task state */
   update(pos: THREE.Vector3) {
-    // TODO: Check if in range of next turnpoint, if so, advance state
+    if (this.cache.update === undefined) {
+      this.cache.update = {
+        tp_pos: new THREE.Vector3(),
+      };
+    }
+    let c = this.cache.update;
+    // Set to height of pg pos to compare only planar distance
+    let activeTp = this.turnpoints[this.activeTurnpointIndex];
+    c.tp_pos.set(activeTp.coordinates[0], pos.y, activeTp.coordinates[2]);
+    // Check if in range of currently active turnpoint, if so, advance state
+    if (c.tp_pos.distanceToSquared(pos) <= Math.pow(activeTp.radius,2)) {
+      this.activeTurnpointIndex += 1;
+    }
+    // TODO: If state beyond turnpoints, finish!
   }
   /** Get task's bounding box, for display purposes */
   getBbox() {

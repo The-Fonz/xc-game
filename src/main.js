@@ -68,7 +68,7 @@ if (document.body.id === "task-example") {
   config.Task = {
     "traceLength": 600,
     // Padding around task view in world units
-    "bboxPadding": 800,
+    "bboxPadding": 10,
     "turnpoints": [
       // xyz coords
       {"name": "Mountain1", "type": "start", "coordinates": [1000,0,500], "radius": 200},
