@@ -6,6 +6,8 @@ import {Terrain} from './game-engine/terrain';
 import {Engine} from './game-engine/engine';
 import {ThreeDeeView} from './render/view3d';
 import {KeyMap} from './utils/input';
+import {Task} from './game-engine/task';
+import {TaskMap} from './overlays/taskmap';
 import {l} from './utils/logging';
 
 /** Handles interaction between high-level game elements */
@@ -27,6 +29,16 @@ export class Game {
     e.initDash(config.Dash);
     l("Generating triangles...");
     var v = new ThreeDeeView(e, terrainmodel, pgmodels, config.ThreeDeeView);
+
+    l("Picking turnpoints...");
+    let task = null;
+    let taskMap = null;
+    if (config.Task) {
+      task = new Task();
+      task.init(config.Task);
+      taskMap = new TaskMap();
+      taskMap.init(task);
+    }
 
     l("Setting time interval...");
     var blur = false;
@@ -54,6 +66,8 @@ export class Game {
           v.updatePg();
           v.updateShadow(e.paragliders[0]);
           v.updateClouds(e.air);
+          if (task) task.update(e.paragliders[0].pos);
+          if (taskMap) taskMap.update(e.paragliders[0]);
         }
         // Switch camera
         if (km.get(" ")) {

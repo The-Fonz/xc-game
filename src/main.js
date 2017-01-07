@@ -34,10 +34,48 @@ if (document.body.id === "freefly-example") {
   let config = BASICCONFIG;
 
   config.Engine.paragliders = [
-    {position: {x:0, y:500, z:0}},
-  ]
+    {position: {x:0, y:800, z:0}},
+  ];
 
   l("Loading resources...");
+
+  let promises = [
+    promiseGet("../terrainmaker/grandcanyon.ignore.json").then(JSON.parse),
+  ];
+  // Add all different paraglider meshes to be loaded
+  let pgmlist = config.ThreeDeeView.pgmeshes;
+  for (var k of Object.keys(pgmlist)) {
+    promises.push(promiseGet(pgmlist[k]).then(JSON.parse));
+  }
+  Promise.all(promises).then((values)=>{
+    let terrainmodel = values[0];
+    // Get all values returned by promises but the first
+    let pgmodels = values.slice(1);
+    let g = new Game(terrainmodel, pgmodels, config);
+  });
+}
+
+// Task fly example
+if (document.body.id === "task-example") {
+  l("Loading task example");
+
+  let config = BASICCONFIG;
+
+  config.Engine.paragliders = [
+    {position: {x:200, y:800, z:200}},
+  ];
+
+  config.Task = {
+    "traceLength": 600,
+    // x0 y0 x1 y1
+    "bbox": [0,0,5000,5000],
+    "turnpoints": [
+      // xyz coords
+      {"name": "Mountain1", "type": "start", "coordinates": [1000,0,500], "radius": 200},
+      {"name": "Village2", "type": "turnpoint", "coordinates": [2000,0,1000], "radius": 300},
+      {"name": "Pond3", "type": "finish", "coordinates": [2000,0,2000], "radius": 100},
+    ],
+  };
 
   let promises = [
     promiseGet("../terrainmaker/grandcanyon.ignore.json").then(JSON.parse),

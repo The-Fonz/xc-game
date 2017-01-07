@@ -65,8 +65,6 @@ export const BASICCONFIG = {
       "maxCloudHeight": 180,
     },
   },
-  "Task": {
-  },
   "ThreeDeeView": {
     "clippingplane": 3000,
     "fog": {"hex": 0xFFFFFF, "near": 400, "far": 3000},
