@@ -17,6 +17,7 @@ export class Task {
     // TODO: only set when start gate time has passed
     this.taskActive = true;
     this.activeTurnpointIndex = 0;
+    this.finished = false;
   }
   /** Update task state */
   update(pos: THREE.Vector3) {
@@ -26,14 +27,21 @@ export class Task {
       };
     }
     let c = this.cache.update;
-    // Set to height of pg pos to compare only planar distance
-    let activeTp = this.turnpoints[this.activeTurnpointIndex];
-    c.tp_pos.set(activeTp.coordinates[0], pos.y, activeTp.coordinates[2]);
-    // Check if in range of currently active turnpoint, if so, advance state
-    if (c.tp_pos.distanceToSquared(pos) <= Math.pow(activeTp.radius,2)) {
-      this.activeTurnpointIndex += 1;
+    if (this.activeTurnpointIndex !== -1) {
+      // Set to height of pg pos to compare only planar distance
+      let activeTp = this.turnpoints[this.activeTurnpointIndex];
+      c.tp_pos.set(activeTp.coordinates[0], pos.y, activeTp.coordinates[2]);
+      // Check if in range of currently active turnpoint, if so, advance state
+      if (c.tp_pos.distanceToSquared(pos) <= Math.pow(activeTp.radius,2)) {
+        this.activeTurnpointIndex += 1;
+      }
     }
-    // TODO: If state beyond turnpoints, finish!
+    // If state beyond turnpoints, finish!
+    if (this.activeTurnpointIndex >= this.turnpoints.length) {
+      console.info("Finished task!");
+      this.activeTurnpointIndex = -1;
+      this.taskActive = false;
+    }
   }
   /** Get task's bounding box, for display purposes */
   getBbox() {

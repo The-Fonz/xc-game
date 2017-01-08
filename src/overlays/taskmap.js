@@ -43,22 +43,32 @@ export class TaskMap {
     let hscale = 167 / (bbox[2]-bbox[0]);
     let vscale = 100 / (bbox[3]-bbox[1]);
     this.scale = Math.min(hscale,vscale);
-    // Offset in world coordinates
-    this.offset = bbox.slice(0,2);
+    // Offset in world coordinates, middle of drawing area
+    this.offset = [bbox[0] + (bbox[2]-bbox[0])/2,
+                   bbox[1] + (bbox[3]-bbox[1])/2];
+    this.height = 100;
+    this.width = 100*1.67;
     this.svg.attr({
       viewBox: "0 0 167 100",
-      height: 200,
-      width: 200*1.67,
+      height: this.height*2,
+      width: this.width*2,
     });
     this._draw();
+  }
+  /** Convert from world to svg coordinates */
+  tox(x) {
+    return this.width/2 - (x - this.offset[0])*this.scale;
+  }
+  toy(y) {
+    return this.height/2 - (y - this.offset[1])*this.scale;
   }
   _draw() {
     // Turnpoints and route between them
     this.svg_tps = [];
     // Turnpoint circle
     for (let tp of this.task.turnpoints) {
-      let x = 167 - (tp.coordinates[0] - this.offset[0])*this.scale;
-      let y = 100 - (tp.coordinates[2] - this.offset[1])*this.scale;
+      let x = this.tox(tp.coordinates[0]);
+      let y = this.toy(tp.coordinates[2]);
       let tpcircle = this.svg.circle(x, y, tp.radius*this.scale).attr({
                         fill: "#fff",
                         stroke: "#000",
@@ -71,7 +81,7 @@ export class TaskMap {
       'innerCircle': this.svg.circle(50,50,5).attr({fill: "black"}),
       'outerCircle': this.svg.circle(50,50,10).attr({fill: "white"}),
     }
-    this.svg_activeTpIndicator.mainCircle = this.svg.rect(0,0,167,100).attr({
+    this.svg_activeTpIndicator.mainCircle = this.svg.rect(0,0,this.width,this.height).attr({
         visibility: "hidden",
         fill: "green",
         mask: this.svg.g(this.svg_activeTpIndicator.outerCircle,
@@ -81,8 +91,8 @@ export class TaskMap {
     let prevcoords = [];
     this.svg_route = [];
     for (let tp of this.task.turnpoints) {
-      let x = 167 - (tp.coordinates[0] - this.offset[0])*this.scale;
-      let y = 100 - (tp.coordinates[2] - this.offset[1])*this.scale;
+      let x = this.tox(tp.coordinates[0]);
+      let y = this.toy(tp.coordinates[2]);
       if (prevcoords[0]) {
         let routeline = this.svg.line(prevcoords[0], prevcoords[1],
                       x, y).attr({
@@ -94,7 +104,7 @@ export class TaskMap {
     }
     // Now mask lines with turnpoints
     // First add white square as background
-    let svg_tps_g = this.svg.g(this.svg.rect(0,0,100,100).attr({fill: "white"}));
+    let svg_tps_g = this.svg.g(this.svg.rect(0,0,this.width,this.height).attr({fill: "white"}));
     // Now add a copy of all circles on top of it
     svg_tps_g.add(this.svg.g(...this.svg_tps).clone());
     // Set circles to black so they mask
@@ -102,7 +112,6 @@ export class TaskMap {
     // Make group of route lines and add mask
     let svg_route_g = this.svg.g(...this.svg_route);
     svg_route_g.attr({mask: svg_tps_g});
-
     // Init round robin-style trace line
     if (this.task.config.traceLength) {
       this.trace = [];
@@ -117,8 +126,10 @@ export class TaskMap {
       }
     }
     // Line from player to active turnpoint
-    this.courseLine = this.svg.line(0,0,0,0).attr({stroke: "red"});
-    // this.svg_tps[0];
+    this.courseLine = this.svg.line(0,0,0,0).attr({
+      stroke: "red",
+      visibility: "hidden",
+    });
     // Init player arrow
     this.arrow = this.svg.polygon(0,0, 5,-4, 0,8, -5,-4).attr({
       fill: "#fff",
@@ -131,8 +142,8 @@ export class TaskMap {
       this.cache.update = {};
     }
     let c = this.cache.update;
-    let x = 167 - (pg.pos.x-this.offset[0])*this.scale;
-    let y = 100 - (pg.pos.z-this.offset[1])*this.scale;
+    let x = this.tox(pg.pos.x);
+    let y = this.toy(pg.pos.z);
     this.arrow.attr({
       // Set rotation center to 0,0 as it doesn't use it by default (centroid?)
       transform: `t${x},${y} r${180+Snap.deg(-pg.heading)} 0 0`,
@@ -150,16 +161,35 @@ export class TaskMap {
       if (this.traceIndex >= this.trace.length) this.traceIndex = 0;
     }
     c.lastpos = [x,y];
-    // Set active tp indication
-    if (this.task.taskActive &&
-        this.task.activeTurnpointIndex !== c.lastTpIndex) {
+    if (this.task.taskActive) {
       let tp = this.task.turnpoints[this.task.activeTurnpointIndex];
-      let x = 167 - (tp.coordinates[0] - this.offset[0])*this.scale;
-      let y = 100 - (tp.coordinates[2] - this.offset[1])*this.scale;
-      this.svg_activeTpIndicator.mainCircle.attr({visibility: "visible"});
-      this.svg_activeTpIndicator.innerCircle.attr({cx: x, cy: y, r: tp.radius*this.scale});
-      this.svg_activeTpIndicator.outerCircle.attr({cx: x, cy: y, r: tp.radius*this.scale+3});
+      let tpx = this.tox(tp.coordinates[0]);
+      let tpy = this.toy(tp.coordinates[2]);
+      // Adjust courseLine
+      this.courseLine.attr({
+        x1: this.tox(pg.pos.x), y1: this.toy(pg.pos.z),
+        x2: tpx, y2: tpy,
+        "visibility": "visible",
+      });
+      // Set active tp indication
+      if (this.task.activeTurnpointIndex !== c.lastTpIndex) {
+        this.svg_activeTpIndicator.mainCircle.attr({visibility: "visible"});
+        this.svg_activeTpIndicator.innerCircle.attr({cx: tpx, cy: tpy, r: tp.radius*this.scale});
+        this.svg_activeTpIndicator.outerCircle.attr({cx: tpx, cy: tpy, r: tp.radius*this.scale+3});
+        // Show course line until next turnpoint cylinder
+        this.courseLine.attr({
+          mask: this.svg.g(
+            this.svg.rect(0,0,this.width,this.height).attr({fill: "white"}),
+            this.svg_tps[this.task.activeTurnpointIndex].clone().attr({fill: "black"})),
+        });
+      }
+    } else if (this.task.activeTurnpointIndex === -1 &&
+               c.lastTpIndex !== this.task.activeTurnpointIndex) {
+      // If finished, reset active tp indication and courseLine
+      this.svg_activeTpIndicator.mainCircle.attr({visibility: "hidden"});
+      this.courseLine.attr({"visibility": "hidden"});
     }
+
     c.lastTpIndex = this.task.activeTurnpointIndex;
   }
 }

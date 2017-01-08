@@ -9,7 +9,7 @@ export const BASICCONFIG = {
     // Speed up simulation by this multiplication factor
     // Does NOT influence steering or camera movements,
     // just the engine speed (so pg, air, etc.)
-    "timeMultiplier": 20,
+    "timeMultiplier": 10,
     // Nested config because Engine instantiates Paraglider objects
     "Paraglider": {
       // Go this many times faster
