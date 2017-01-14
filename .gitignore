@@ -44,5 +44,4 @@ bundle.js
 
 *.pyc
 
-# Can be generated from source files
-static/icons.svg
+.idea

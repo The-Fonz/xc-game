@@ -20,7 +20,7 @@ The NPM commandline scripts in `package.json` are used to automate everything. N
 - `./obj` contains all scenery and paraglider models
 - `./terrainmaker` is the utility used to generate TINs (Triangular Irregular Network) from DEMs (Digital Elevation Model, grid of heights), giving the game its low-poly style
 - `./src` contains the source ES2015 code that gets transpiled with babel
-- `./static` holds icons and compiled javascript
+- `./build` Holds compiled js bundle and html, can be copied to server
 
 ## Development
 Check out the docs with `npm run serve:docs`.
@@ -32,3 +32,12 @@ The game loop must run at least 30 times a second, hence the importance of keepi
 - Config: some values that will probably never get changed can be hardcoded, others should end up in `BASICCONFIG` where they can be overridden. They should have sane default values. They should be namespaced by class name, and nested if the object is instantiated by another class.
 - Only touch DOM when really needed to avoid slowdowns. If needed, let a function or class cache state (kind of like virtual DOM).
 - As few dependencies as possible, to keep code size as small as possible.
+
+## Reflections on architecture
+The classes should not know too much about each other, to avoid problems when changing things. Ideally their interactions are clearly defined in terms of e.g. interfaces. Efficiency is often a factor though, because we must only instantiate objects once.
+So let's not init clouds in the Engine constructor, but instead define a method called initClouds, that instantiates cloud meshes. Then another method takes care of updating.
+
+Let's agree on this:
+- No class--except the Game class--instantiates objects.
+- Initialization is done using `.initThing` methods, updating using `.updateThing` methods.
+- Every object that needs it has a `.meta` attribute where external methods can keep state info and a `.cache` attribute for internal state-keeping.
