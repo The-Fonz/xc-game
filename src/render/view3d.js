@@ -305,6 +305,8 @@ export class ThreeDeeView {
     // Instantiate cache vars
     if (this.camFree.translatevect === undefined) {
       this.camFree.translatevect = new THREE.Vector3();
+      this.camera.position.fromArray(
+          this.config.cameras[this.camIndex]['position'] || [500,500,500]);
       // Reorder once
       this.camera.rotation.reorder('YZX');
       console.info("Fly around with w,s,a,d,f,v and arrow keys");

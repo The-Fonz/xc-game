@@ -24,9 +24,9 @@ export class Game {
       terrainmodel.xcgame.heightmapvscale);
     l("Retrieving vectors...");
     var e = new Engine(t, config.Engine);
-    e.initVarioTone(config.VarioTone);
     e.initAir(config.Air);
-    e.initDash(config.Dash);
+    if (config.VarioTone) e.initVarioTone(config.VarioTone);
+    if (config.Dash) e.initDash(config.Dash);
     l("Generating triangles...");
     var v = new ThreeDeeView(e, terrainmodel, pgmodels, config.ThreeDeeView);
 

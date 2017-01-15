@@ -16,16 +16,17 @@
     "three": "*"
   },
   "devDependencies": {
+    "axios": "^0.15.3",
     "babel-plugin-transform-flow-strip-types": "^6.21.0",
     "babel-preset-es2015": "*",
     "babelify": "*",
     "box-intersect": "^1.0.1",
     "browserify": "*",
     "http-server": "*",
-    "snapsvg": "^0.4.0",
-    "watchify": "*",
     "npm-run-all": "*",
-    "uglifyjs": "*"
+    "snapsvg": "^0.4.0",
+    "uglifyjs": "*",
+    "watchify": "*"
   },
   "private": true,
   "license": "GPLV2"

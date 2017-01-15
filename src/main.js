@@ -6,6 +6,7 @@ import {Game} from './game';
 import {promiseGet} from './utils/http';
 import {l} from './utils/logging';
 import {BASICCONFIG} from './config';
+import axios from 'axios';
 
 // Entry point for terrain load example
 if (document.body.id === "terrain-load") {
@@ -15,15 +16,15 @@ if (document.body.id === "terrain-load") {
   config.ThreeDeeView.showheightmap = true;
   config.ThreeDeeView.axishelper = 3000;
   config.ThreeDeeView.flyaround = true;
+  config.Dash = null;
 
   config.ThreeDeeView.cameras = [{'type': 'free'}];
 
   l("Loading resources...");
 
-  promiseGet("../terrainmaker/grandcanyon.ignore.json")
-  .then(JSON.parse)
-  .then((json)=>{
-    let g = new Game(json, null, config);
+  axios.get("../terrainmaker/grandcanyon.ignore.json")
+  .then((resp)=>{
+    let g = new Game(resp.data, null, config);
   });
 }
 
