@@ -18,6 +18,7 @@ export class Task {
     this.taskActive = true;
     this.activeTurnpointIndex = 0;
     this.finished = false;
+    this.startTime = Date.now();
   }
   /** Update task state */
   update(pos: THREE.Vector3) {
@@ -39,6 +40,7 @@ export class Task {
     // If state beyond turnpoints, finish!
     if (this.activeTurnpointIndex >= this.turnpoints.length) {
       console.info("Finished task!");
+      window.alert(`Congratulations, you finished the task in ${((Date.now() - this.startTime)/1000).toFixed(0)} seconds!`);
       this.activeTurnpointIndex = -1;
       this.taskActive = false;
     }
