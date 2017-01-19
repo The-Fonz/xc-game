@@ -37,8 +37,8 @@ node_modules
 .sublime-project
 .sublime-workspace
 
-# Bundle
-bundle.js
+# Compiled files
+build/
 
 *.ignore.*
 

@@ -53,8 +53,11 @@ export class Dash {
   /** Target is HTMLElement */
   constructor(config) {
     this.config = config;
-    this.target = document.getElementById(this.config.targetid);
-    this.target.innerHTML = DASH_TEMPLATE;
+    let appendTo = document.getElementById("overlays") ||
+                   document.body;
+    let elem = document.createElement("div");
+    elem.innerHTML = DASH_TEMPLATE;
+    appendTo.appendChild(elem);
     this.spd_svg = Snap('#dash-speedbar-svg');
     this.var_svg = Snap('#dash-vario-svg');
     this._draw();

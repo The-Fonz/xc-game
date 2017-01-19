@@ -28,7 +28,6 @@ export const BASICCONFIG = {
     },
   },
   "Dash": {
-    "targetid": "overlay-dash",
     // Vario indication for pos or neg, apart from the 0-level
     "varioLevels": 4,
     // Scaling vario indication

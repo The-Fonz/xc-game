@@ -41,32 +41,39 @@ export class Game {
     }
 
     l("Setting time interval...");
-    var blur = false;
+    this.blur = false;
     // requestAnimationFrame only runs when tab is active
     // Handle blur/focus event to stop simulation
     // when window is hidden while tab is active
     window.addEventListener('blur', (ev) => {
-      blur=true;
+      this.blur=true;
       l("window blurred, stopping simulation");
     });
     window.addEventListener('focus', (ev) => {
-      blur=false;
+      this.blur=false;
       l("window focused, resuming simulation");
     });
 
     var time = 0;
-    function renderloop(timestamp) {
+    let firsttime = true;
+    let renderloop = (timestamp) => {
       if (time===0) time = timestamp;
 
       let dt = (timestamp-time)/1000;
 
-      if (blur === false) {
+      // Run at least once, even when blurred from start
+      if (this.blur === false || firsttime) {
+        firsttime = false;
         if (pgmodels) {
           e.paragliders[0].input(dt, km);
           v.updatePg();
           v.updateShadow(e.paragliders[0]);
           v.updateClouds(e.air);
-          if (task) task.update(e.paragliders[0].pos);
+          if (task) {
+            if (task.update(e.paragliders[0].pos)) {
+
+            };
+          }
           if (taskMap) taskMap.update(e.paragliders[0]);
         }
         // Switch camera
@@ -85,5 +92,10 @@ export class Game {
     }
 
     requestAnimationFrame(renderloop);
+  }
+  /* Used to blur/pause simulation */
+  setBlur(bool: Boolean) {
+    // Replace null/NaN/0 etc. with false
+    this.blur = bool || false;
   }
 }
