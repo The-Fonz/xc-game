@@ -5,7 +5,7 @@
 import {Terrain} from './game-engine/terrain';
 import {Engine} from './game-engine/engine';
 import {ThreeDeeView} from './render/view3d';
-import {KeyMap} from './utils/input';
+import {Controls} from './utils/input';
 import {Task} from './game-engine/task';
 import {TaskMap} from './overlays/taskmap';
 import {l} from './utils/logging';
@@ -14,7 +14,7 @@ import {l} from './utils/logging';
 export class Game {
   constructor(terrainmodel, pgmodels, config){
     // Load terrain, engine, view (in that order)
-    var km = new KeyMap();
+    var km = new Controls();
     l("Building mountains...");
     var t = new Terrain(terrainmodel.xcgame.heightmap,
       terrainmodel.xcgame.hscale,
@@ -72,17 +72,20 @@ export class Game {
           if (task) {
             if (task.update(e.paragliders[0].pos)) {
 
-            };
+            }
+            ;
           }
           if (taskMap) taskMap.update(e.paragliders[0]);
         }
         // Switch camera
-        if (km.get(" ")) {
-          km.reset(" ");
-          v.nextCam();
+        if (config.ThreeDeeView.cameras.length > 1) {
+          if (km.get("spacebar")) {
+            km.reset("spacebar");
+            v.nextCam();
+          }
+          v.cam(km, dt, e.paragliders[0]);
+          e.update(dt);
         }
-        v.cam(km, dt, e.paragliders[0]);
-        e.update(dt);
         // l("animating");
         v.render();
       }

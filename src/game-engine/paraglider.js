@@ -129,23 +129,23 @@ export class Paraglider {
       let steeringSensitivity =
       this.performance[this.speedstate]['steeringSensitivity'];
       let steermultiplier = dt * steeringSensitivity;
-      let steer = Number(k.get('ArrowLeft')||0 - k.get('ArrowRight')||0);
+      let steer = Number(k.get('left')||0 - k.get('right')||0);
       this.heading += steermultiplier * steer;
       // Bank in radians
       this.bank = -steer*.07 * steeringSensitivity;
       // Now change speedstate
-      this.speedstate += Number(k.get('ArrowUp')||0 - k.get('ArrowDown')||0);
+      this.speedstate += Number(k.get('up')||0 - k.get('down')||0);
       if (this.speedstate < 0) this.speedstate = 0;
       let l = this.performance.length;
       if (this.speedstate >= l) this.speedstate = l-1;
       // Depress keys
-      k.reset('ArrowUp');
-      k.reset('ArrowDown');
+      k.reset('up');
+      k.reset('down');
     } else {
       // Walk
-      this.walk = k.get('ArrowUp') - k.get('ArrowDown');
+      this.walk = k.get('up') - k.get('down');
       this.heading += dt * 8 *
-            Number(k.get('ArrowLeft')||0 - k.get('ArrowRight')||0);
+            Number(k.get('left')||0 - k.get('right')||0);
     }
   }
   /**
