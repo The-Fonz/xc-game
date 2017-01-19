@@ -22,7 +22,7 @@ if (document.body.id === "terrain-load") {
 
   l("Loading resources...");
 
-  axios.get("../terrainmaker/grandcanyon.ignore.json")
+  axios.get("../obj/sceneries/grandcanyon/grandcanyon.json")
   .then((resp)=>{
     let g = new Game(resp.data, null, config);
   });
@@ -41,7 +41,7 @@ if (document.body.id === "freefly-example") {
   l("Loading resources...");
 
   let promises = [
-    promiseGet("../terrainmaker/grandcanyon.ignore.json").then(JSON.parse),
+    promiseGet("../obj/sceneries/grandcanyon/grandcanyon.json").then(JSON.parse),
   ];
   // Add all different paraglider meshes to be loaded
   let pgmlist = config.ThreeDeeView.pgmeshes;
@@ -79,7 +79,7 @@ if (document.body.id === "task-example") {
   };
 
   let promises = [
-    promiseGet("../terrainmaker/grandcanyon.ignore.json").then(JSON.parse),
+    promiseGet("../obj/sceneries/grandcanyon/grandcanyon.json").then(JSON.parse),
   ];
   // Add all different paraglider meshes to be loaded
   let pgmlist = config.ThreeDeeView.pgmeshes;
@@ -117,7 +117,7 @@ if (document.body.id === "demo") {
   };
 
   let promises = [
-    promiseGet("../terrainmaker/grandcanyon.ignore.json").then(JSON.parse),
+    promiseGet("../obj/sceneries/grandcanyon/grandcanyon.json").then(JSON.parse),
   ];
   // Add all different paraglider meshes to be loaded
   let pgmlist = config.ThreeDeeView.pgmeshes;
