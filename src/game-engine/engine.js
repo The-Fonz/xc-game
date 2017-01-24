@@ -5,7 +5,7 @@
 import {Air} from "./air";
 import {Terrain} from "./terrain";
 import {Paraglider} from "./paraglider";
-import {VarioTone} from '../utils/sound';
+import {VarioTone} from './sound';
 import {Dash} from '../overlays/dash';
 
 /**

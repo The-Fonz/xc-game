@@ -2,7 +2,7 @@
  * Contains help functions for keyboard/mouse input
  */
 
-import {l} from './logging';
+import {l} from '../utils';
 
 // Map key codes to control commands
 const KEYS = {

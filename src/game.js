@@ -5,10 +5,10 @@
 import {Terrain} from './game-engine/terrain';
 import {Engine} from './game-engine/engine';
 import {ThreeDeeView} from './render/view3d';
-import {Controls} from './utils/input';
+import {Controls} from './game-engine/input';
 import {Task} from './game-engine/task';
 import {TaskMap} from './overlays/taskmap';
-import {l} from './utils/logging';
+import {l} from './utils';
 
 /** Handles interaction between high-level game elements */
 export class Game {

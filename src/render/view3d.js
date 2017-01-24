@@ -3,7 +3,7 @@
  */
 
 import * as THREE from "three";
-import {l} from "../utils/logging";
+import {l} from "../utils";
 
 /** WebGL view */
 export class ThreeDeeView {

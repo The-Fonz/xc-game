@@ -4,9 +4,8 @@
 
 import * as THREE from 'three';
 import {Thermal} from "./thermal";
-import {uniform} from "../utils/misc";
+import {uniform} from "../utils";
 
-// TODO: move to utils
 
 /**
  * Manages all air movements. Adds `.meta.air` to `Paraglider` object.
