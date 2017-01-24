@@ -2,8 +2,8 @@
  * Shows main menu, can use location.hash shortcuts
  */
 
-import axios from 'axios';
-import * as _ from 'lodash';
+import axios from 'axios-es6';
+import map from 'lodash-es/map';
 
 import {l} from './utils';
 import {Game} from './game';
@@ -29,7 +29,7 @@ function loadConfig(config) {
         let menu = document.getElementById("menu");
         let b = document.getElementById("menu-start-button");
         // Extract data from axios response objects
-        let pgmodels = _.map(resps.slice(1), 'data');
+        let pgmodels = map(resps.slice(1), 'data');
 
         let g = new Game(terrainmodel, pgmodels, config);
         // Hide instruments

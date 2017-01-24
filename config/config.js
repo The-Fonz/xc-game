@@ -1,10 +1,11 @@
 import {BASICCONFIG} from './basic-config';
 import * as missions from './missions';
-import * as _ from 'lodash';
+import isArray from 'lodash-es/isArray';
+import merge from 'lodash-es/merge';
 
 function customizer(objValue, srcValue) {
     // Do not merge arrays but overwrite them
-    if (_.isArray(objValue)) {
+    if (isArray(objValue)) {
         return srcValue;
     }
     // Merging is handled by `_.merge()` itself if returning `undefined`
@@ -18,7 +19,7 @@ for (let key in missions) {
         // TODO: Filter test configs in production build
     } else {
         // Merge with standard config
-        let cfg = _.merge({}, BASICCONFIG, missions[key], customizer);
+        let cfg = merge({}, BASICCONFIG, missions[key], customizer);
         configs.push(cfg);
     }
 }
