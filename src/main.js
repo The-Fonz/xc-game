@@ -2,15 +2,16 @@
  * Shows main menu, can use location.hash shortcuts
  */
 
-import axios from 'axios-es6';
-import map from 'lodash-es/map';
+// Import browser-friendly axios
+import axios from 'axios/dist/axios';
+import map from 'lodash/map';
 
 import {l} from './utils';
 import {Game} from './game';
 
 import {configs} from '../config/config';
 
-if (process.env.DEV) {
+if (ENV === 'development') {
     l("Compiled in DEV mode");
 }
 

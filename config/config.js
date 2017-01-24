@@ -1,7 +1,7 @@
 import {BASICCONFIG} from './basic-config';
 import * as missions from './missions';
-import isArray from 'lodash-es/isArray';
-import merge from 'lodash-es/merge';
+import isArray from 'lodash/isArray';
+import merge from 'lodash/merge';
 
 function customizer(objValue, srcValue) {
     // Do not merge arrays but overwrite them
@@ -15,7 +15,7 @@ let configs = [];
 
 for (let key in missions) {
     // Test if 'test' in name
-    if (!process.env.DEV && key.indexOf('test')!==-1) {
+    if (ENV === 'production' && key.indexOf('test')!==-1) {
         // TODO: Filter test configs in production build
     } else {
         // Merge with standard config
