@@ -1,5 +1,6 @@
 export let testSimpleTask = {
-    name: "Simple task",
+    name: "Simple task test",
+    slug: "test-simple-task",
     scenery: {
         url: "../obj/sceneries/grandcanyon/grandcanyon.json",
     },
@@ -22,7 +23,9 @@ export let testSimpleTask = {
 }
 
 export let testShowHeightmap = {
-    name: "show-heightmap",
+    name: "Show heightmap test",
+    slug: "test-show-heightmap",
+    pgmeshes: null,
     scenery: {
         url: "../obj/sceneries/grandcanyon/grandcanyon.json",
     },
