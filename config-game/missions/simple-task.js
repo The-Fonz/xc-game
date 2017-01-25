@@ -1,6 +1,6 @@
-export let testSimpleTask = {
-    name: "Simple task test",
-    slug: "test-simple-task",
+export let simpleTask = {
+    name: "Simple task",
+    slug: "simple-task",
     thumbnail: "/resources/thumbnails/test-simple-task.png",
     scenery: {
         url: "/resources/sceneries/grandcanyon/grandcanyon.json",
@@ -21,19 +21,4 @@ export let testSimpleTask = {
       {"name": "Pond3", "type": "finish", "coordinates": [2500,0,4500], "radius": 400},
     ],
   },
-}
-
-export let testShowHeightmap = {
-    name: "Show heightmap test",
-    slug: "test-show-heightmap",
-    pgmeshes: null,
-    scenery: {
-        url: "/resources/sceneries/grandcanyon/grandcanyon.json",
-    },
-    ThreeDeeView: {
-        showheightmap: true,
-        axishelper: 3000,
-        flyaround: true,
-        cameras: [{'type': 'free'}],
-    },
 }

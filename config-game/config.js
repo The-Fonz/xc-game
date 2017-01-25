@@ -15,10 +15,8 @@ function customizer(objValue, srcValue) {
 let configs = [];
 
 for (let key in missions) {
-    // Test if 'test' in name
-    if (ENV === 'production' && key.indexOf('test')!==-1) {
-        // TODO: Filter test configs in production build
-    } else {
+    // Filter test configs in production
+    if (!(ENV === 'production' && key.indexOf('test')!==-1)) {
         // Merge with standard config
         let cfg = merge({}, BASICCONFIG, missions[key], customizer);
         configs.push(cfg);

@@ -12,8 +12,8 @@ import {Game} from './game';
 import {Menu} from './overlays/menu';
 
 // List of configs
-import {configs} from '../config/config';
-import {title, introtext} from '../config/text';
+import {configs} from '../config-game/config';
+import {title, introtext} from '../config-game/text';
 
 if (ENV === 'development') {
     l("Compiled in DEV mode");

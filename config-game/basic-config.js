@@ -10,7 +10,7 @@ export const BASICCONFIG = {
     // Does NOT influence steering or camera movements,
     // just the engine speed (so pg, air, etc.)
     "timeMultiplier": 10,
-    // Nested config because Engine instantiates Paraglider objects
+    // Nested config-game because Engine instantiates Paraglider objects
     "Paraglider": {
       // Go this many times faster
       "speedMultiplier": 1,
@@ -21,8 +21,8 @@ export const BASICCONFIG = {
       // Take off if gradient enough and direction within this much rad
       "takeoffDirection": 1.3,
       // Horizontal and vertical bounds for walking speed
-      "walkingHorizontalSpeed": 3,
-      "walkingVerticalSpeed": 2,
+      "walkingHorizontalSpeed": 6,
+      "walkingVerticalSpeed": 3,
       // Possibly limit the gradient that can be handled, but that would
       // require designing the map to contain paths that are not too steep
     },
