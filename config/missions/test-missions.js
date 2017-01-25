@@ -1,8 +1,9 @@
 export let testSimpleTask = {
     name: "Simple task test",
     slug: "test-simple-task",
+    thumbnail: "/resources/thumbnails/test-simple-task.png",
     scenery: {
-        url: "../obj/sceneries/grandcanyon/grandcanyon.json",
+        url: "/resources/sceneries/grandcanyon/grandcanyon.json",
     },
     Engine: {
         paragliders: [
@@ -27,7 +28,7 @@ export let testShowHeightmap = {
     slug: "test-show-heightmap",
     pgmeshes: null,
     scenery: {
-        url: "../obj/sceneries/grandcanyon/grandcanyon.json",
+        url: "/resources/sceneries/grandcanyon/grandcanyon.json",
     },
     ThreeDeeView: {
         showheightmap: true,

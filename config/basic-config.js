@@ -71,7 +71,7 @@ export const BASICCONFIG = {
     "cloudColor": "#DDE",
     // Different meshes to be used in this.Engine.paragliders
     "pgmeshes": {
-      "simplepg": "../obj/pgmodels/simplepg.json",
+      "simplepg": "/resources/pgmodels/simplepg.json",
     },
     // Order of cameras determines the cycle order and first one instantiated
     "cameras": [

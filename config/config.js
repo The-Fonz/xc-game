@@ -1,7 +1,8 @@
-import {BASICCONFIG} from './basic-config';
-import * as missions from './missions';
 import isArray from 'lodash/isArray';
 import merge from 'lodash/merge';
+
+import {BASICCONFIG} from './basic-config';
+import * as missions from './missions';
 
 function customizer(objValue, srcValue) {
     // Do not merge arrays but overwrite them

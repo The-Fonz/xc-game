@@ -13,8 +13,16 @@ export class Menu {
         this.target.innerHTML = str;
     }
 
-    _get_intro() {
-        return `This is an introduction.`;
+    set_title(s) {
+        this.title = s;
+    }
+
+    set_intro(s) {
+        this.intro = s;
+    }
+
+    _get_text() {
+        return `${this.title} ${this.intro}`;
     }
 
     visible(bool: Boolean) {
@@ -25,11 +33,15 @@ export class Menu {
         let s = "";
         for (let i=0; i<missions.length; i++) {
             let mission = missions[i];
+            // Use background thumbnail if defined
+            let style = mission.thumbnail ? `background-image: url(${mission.thumbnail});` : '';
             s += `
-                <div class="mission" data-menu-index="${i}">${mission.name}</div>
+                <div class="mission" data-menu-index="${i}" style="${style}">
+                    <div class="overlay-title vcenter">${mission.name}</div>
+                </div>
             `;
         }
-        this._render(`${this._get_intro()} <div class="missionlist">${s}</div>`);
+        this._render(`${this._get_text()} <div class="missionlist">${s}</div>`);
         // Attach click handlers
         for (let element of this.target.getElementsByClassName("mission")) {
             element.addEventListener('click', (ev) => {
@@ -39,11 +51,11 @@ export class Menu {
     }
 
     render_loading_mission(mission) {
-        this._render(`Loading mission ${mission.name}...`);
+        this._render(`<div class="vcenter">Loading mission...</div>`);
     }
 
     render_playbtn(callback) {
-        this._render(`<button id="menu-start-button">Play</button>`);
+        this._render(`<button class="vcenter" id="menu-start-button">Play</button>`);
         document.getElementById("menu-start-button").
                  addEventListener('click', callback);
     }
