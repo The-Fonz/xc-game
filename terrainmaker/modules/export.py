@@ -1,28 +1,29 @@
 #
-# Utilities for terrain generation, grouped here for clean code
+# Export to THREE.js JSON format, png, jpg (heightmaps)
 #
 
-from __future__ import division
-import numpy as np
-from scipy import interpolate as spip
+from scipy.misc import imsave
 import matplotlib.pyplot as plt
-import json
+
+from terrainmaker.modules.heightmap import delaunay_to_heightmap
 
 
-def delaunay_to_heightmap(vertices, faces):
-    # Convert to delaunay triangulation scipy format
-    # Make grid where to interpolate (or take as arg)
-    xmin = vertices[:,0].min().round()
-    xmax = vertices[:,0].max().round()
-    zmin = vertices[:,2].min().round()
-    zmax = vertices[:,2].max().round()
-    print("Generating grid on [{}:{},{}:{}]".format(xmin,xmax,zmin,zmax))
-    evalpts = np.array([ (i,j) for j in np.arange(zmin,xmax) for i in np.arange(xmin,xmax) ])
-    # Interpolate with http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.LinearNDInterpolator.html
-    points = vertices[:,[0,2]]
-    values = vertices[:,1]
-    out = spip.griddata(points, values, evalpts, method='linear')
-    return out.reshape((int(xmax-xmin-1),int(zmax-zmin)))
+def heightmap_to_png(heightmap, imgname):
+    "Saves heightmap to png"
+    imsave(imgname, heightmap)
+
+
+def heightmap_to_jpg(heightmap, imgname):
+    "Saves heightmap to jpg. Take care to check if error within bounds"
+    raise Warning("Not implemented yet")
+
+
+def heightmap_to_overview(heightmap, imgname):
+    plt.imshow(
+        heightmap,
+        cmap=plt.get_cmap('terrain'))
+    plt.savefig('grandcanyon-overview.png')
+
 
 def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscale=1, outputheightmap=True):
     o = terrainfilter.outputs[0]
