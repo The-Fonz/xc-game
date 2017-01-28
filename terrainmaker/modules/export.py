@@ -2,10 +2,16 @@
 # Export to THREE.js JSON format, png, jpg (heightmaps)
 #
 
+import os
+import json
+import logging
+import numpy as np
 from scipy.misc import imsave
 import matplotlib.pyplot as plt
 
 from terrainmaker.modules.heightmap import delaunay_to_heightmap
+
+logger = logging.getLogger(__name__)
 
 
 def heightmap_to_png(heightmap, imgname):
@@ -13,9 +19,9 @@ def heightmap_to_png(heightmap, imgname):
     imsave(imgname, heightmap)
 
 
-def heightmap_to_jpg(heightmap, imgname):
-    "Saves heightmap to jpg. Take care to check if error within bounds"
-    raise Warning("Not implemented yet")
+def img_to_jpg(imgname):
+    "Converts heightmap to jpg. Take care to check if error within bounds"
+    Image.open(imgname).save(os.path.splitext(imgname)[0]+'.jpg', 'JPEG')
 
 
 def heightmap_to_overview(heightmap, imgname):
@@ -25,7 +31,9 @@ def heightmap_to_overview(heightmap, imgname):
     plt.savefig('grandcanyon-overview.png')
 
 
-def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscale=1, outputheightmap=True):
+def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF,
+                    hscale=1, vscale=1,
+                    remove_edge_triangles=True):
     o = terrainfilter.outputs[0]
     vertices = o.points.to_array()
     # Contains leading 3's for each triangle
@@ -63,10 +71,35 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscal
     faces = faces.flatten()
     faces = faces.astype(int)
 
+    def is_edge_triangle(vi):
+        vertices[vi]
+        return 0
+
+    # TODO: Faces already have color indices appended.
+    #       Append colors after removing edge triangles
+    # Edge triangles are often very narrow due to delaunay constraint failing
+    if remove_edge_triangles:
+        logger.info("Removing edge triangles...")
+        oldfaces = faces.copy()
+        faces = np.ndarray(faces.shape)
+        i = 0
+        import pdb; pdb.set_trace()
+        for t,v1,v2,v3 in oldfaces.reshape(faces.shape[0]//4, 4):
+            # Must have two edge vertices to be on an edge
+            if (is_edge_triangle(v1) +
+                is_edge_triangle(v2) +
+                is_edge_triangle(v3)) < 2:
+                faces[i:i+4] = [t,v1,v2,v3]
+                i += 4
+            if i % 1000:
+                logger.info("Processed %d out of %s faces", i//4, len(faces)//4)
+
+    # TODO: Append colors here
+
     heightmap = delaunay_to_heightmap(vertices, faces)
     # Normalize heightmap to 0-255 and remember vscale to resize later
     heightmapvscale = heightmap.max() / 255
-    print("heightmapvscale {:.2f}".format(heightmapvscale))
+    logger.info("heightmapvscale {:.2f}".format(heightmapvscale))
     heightmap /= heightmapvscale
     heightmap = heightmap.round()
 
@@ -78,7 +111,7 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF, hscale=1, vscal
         # Special xcgame metadata
         "xcgame": {
             # Unencoded heightmap
-            "heightmap": heightmap.tolist(),
+            # "heightmap": heightmap.tolist(),
             "heightmapvscale": heightmapvscale,
             # hscale is the same for heightmap and geometry
             "hscale": float(hscale),

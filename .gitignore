@@ -45,3 +45,5 @@ build/
 *.pyc
 
 .idea
+
+resources/DEM_CACHE/

@@ -5,6 +5,7 @@
 import io
 import logging
 import zipfile
+import requests
 import numpy as np
 from scipy import interpolate
 
@@ -48,7 +49,7 @@ def hgt_to_nparray(bytesio):
     if side % 1:
         raise Warning("Side is not exactly an integer but {:f}".format(side))
     side = int(side)
-    logger.info("Guessing that square dem side length is %d", side)
+    logger.info("Guessing that square DEM side length is %d", side)
     data.shape = (side, side)
     # Return as floats for easy calcs later on
     return data.astype(np.float32)
@@ -64,13 +65,13 @@ def delaunay_to_heightmap(vertices, faces):
     # Make grid where to interpolate (or take as arg)
     xmin = vertices[:,0].min().round()
     xmax = vertices[:,0].max().round()
-    zmin = vertices[:,2].min().round()
+    zmin = vertices[:,2].min().round()+1
     zmax = vertices[:,2].max().round()
-    print("Generating grid on [{}:{},{}:{}]".format(xmin,xmax,zmin,zmax))
-    evalpts = np.array([ (i,j) for j in np.arange(zmin,xmax) for i in np.arange(xmin,xmax) ])
+    logger.info("Generating grid on [{}:{},{}:{}]".format(xmin,xmax,zmin,zmax))
+    evalpts = np.array([ (i,j) for j in np.arange(zmin,zmax) for i in np.arange(xmin,xmax) ])
     # Interpolate with http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.LinearNDInterpolator.html
     points = vertices[:,[0,2]]
     values = vertices[:,1]
     out = interpolate.griddata(points, values, evalpts, method='linear')
-    return out.reshape((int(xmax-xmin-1),int(zmax-zmin)))
+    return out.reshape((int(zmax-zmin),int(xmax-xmin)))
 
