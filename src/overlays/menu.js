@@ -43,9 +43,10 @@ export class Menu {
         }
         this._render(`${this._get_text()} <div class="missionlist">${s}</div>`);
         // Attach click handlers
-        for (let element of this.target.getElementsByClassName("mission")) {
-            element.addEventListener('click', (ev) => {
-                callback(missions[element.dataset.menuIndex]);
+        let mission_elems = this.target.getElementsByClassName("mission");
+        for (let i=0; i<mission_elems.length; i++) {
+            mission_elems[i].addEventListener('click', (ev) => {
+                callback(missions[mission_elems[i].dataset.menuIndex]);
             });
         }
     }
