@@ -6,6 +6,7 @@ import os
 import json
 import logging
 import numpy as np
+from PIL import Image
 from scipy.misc import imsave
 import matplotlib.pyplot as plt
 
@@ -21,14 +22,17 @@ def heightmap_to_png(heightmap, imgname):
 
 def img_to_jpg(imgname):
     "Converts heightmap to jpg. Take care to check if error within bounds"
-    Image.open(imgname).save(os.path.splitext(imgname)[0]+'.jpg', 'JPEG')
+    jpgname = os.path.splitext(imgname)[0]+'.jpg'
+    Image.open(imgname).save(jpgname, 'JPEG')
+    return jpgname
 
 
-def heightmap_to_overview(heightmap, imgname):
+def heightmap_to_overview(heightmap, imgname, cm):
     plt.imshow(
         heightmap,
-        cmap=plt.get_cmap('terrain'))
-    plt.savefig('grandcanyon-overview.png')
+        # Pass only colormap name, make sure to register colormap
+        cmap=cm)
+    plt.savefig(imgname)
 
 
 def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF,
@@ -46,7 +50,9 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF,
 
     # Zero height at lowest point
     vertices[:,1] -= vertices[:,1].min()
-
+    # Put origin at 0,0
+    vertices[:,0] -= vertices[:,0].min()
+    vertices[:,2] -= vertices[:,2].min()
 
     faces = faces.reshape((len(faces)//4, 4))
     # Triangle with face color, see three.js json version 3 format
@@ -71,30 +77,38 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF,
     faces = faces.flatten()
     faces = faces.astype(int)
 
+
+    xmin = vertices[:,0].min()
+    xmax = vertices[:,0].max()
+    zmin = vertices[:,2].min()
+    zmax = vertices[:,2].max()
+
     def is_edge_triangle(vi):
-        vertices[vi]
+        x,y,z = vertices[vi]
+        if x <= xmin+1 or x >= xmax-1 or z <= zmin+4 or z >= zmax-4:
+            return 1
         return 0
 
-    # TODO: Faces already have color indices appended.
-    #       Append colors after removing edge triangles
     # Edge triangles are often very narrow due to delaunay constraint failing
     if remove_edge_triangles:
         logger.info("Removing edge triangles...")
         oldfaces = faces.copy()
+        # Output only 8 log messages
+        log_i = oldfaces.shape[0] // 8
         faces = np.ndarray(faces.shape)
         i = 0
-        import pdb; pdb.set_trace()
-        for t,v1,v2,v3 in oldfaces.reshape(faces.shape[0]//4, 4):
+        for t,v1,v2,v3,c in oldfaces.reshape(faces.shape[0]//5, 5):
             # Must have two edge vertices to be on an edge
             if (is_edge_triangle(v1) +
                 is_edge_triangle(v2) +
                 is_edge_triangle(v3)) < 2:
-                faces[i:i+4] = [t,v1,v2,v3]
-                i += 4
-            if i % 1000:
-                logger.info("Processed %d out of %s faces", i//4, len(faces)//4)
-
-    # TODO: Append colors here
+                faces[i:i+5] = [t,v1,v2,v3,c]
+                i += 5
+            if not i % log_i:
+                logger.info("Processed %d out of %s faces", i//5, len(faces)//5)
+        logger.info("Removed %d edge faces", (oldfaces.shape[0]-i)//5)
+        # faces is shorter than oldfaces, resize in-place
+        faces.resize(i)
 
     heightmap = delaunay_to_heightmap(vertices, faces)
     # Normalize heightmap to 0-255 and remember vscale to resize later
@@ -103,15 +117,17 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF,
     heightmap /= heightmapvscale
     heightmap = heightmap.round()
 
-    # Put origin at 0,0
-    vertices[:,0] -= vertices[:,0].min()
-    vertices[:,2] -= vertices[:,2].min()
+    # Check if we can safely convert to int
+    # to avoid storing ".0" when it's printed as float
+    if np.any(vertices % 1):
+        raise Warning("Not all vertices are ints")
+    vertices = vertices.flatten().astype(np.int)
 
     o = {
         # Special xcgame metadata
         "xcgame": {
             # Unencoded heightmap
-            # "heightmap": heightmap.tolist(),
+            "heightmap": heightmap.tolist(),
             "heightmapvscale": heightmapvscale,
             # hscale is the same for heightmap and geometry
             "hscale": float(hscale),
@@ -122,9 +138,9 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF,
 
         "scale": 1.0,
 
-        "vertices": list(vertices.flatten()),
+        "vertices": list(vertices),
 
-        "faces": list(faces),
+        "faces": list(faces.astype(np.int)),
 
         "colors": colors,
 

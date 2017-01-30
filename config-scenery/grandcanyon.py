@@ -1,5 +1,5 @@
 # Gets imported from terrainmaker colormaps module
-colormap = 'mpl_terrain'
+colormap = 'terrain'
 hscale = 30
 vscale = 3
 

@@ -9,7 +9,8 @@ import logging
 import argparse
 import importlib
 
-logging.basicConfig(level='INFO')
+logging.basicConfig(level='INFO',
+                    format="%(relativeCreated)dms %(name)s %(message)s")
 logger = logging.getLogger(__name__)
 
 # Add terrainmaker and config folder to PATH for module import
@@ -46,6 +47,7 @@ if __name__=="__main__":
         logger.error("Config %s not found in folder %s", args.config, config_folder)
         exit()
 
+    colormap = getattr(colormaps, config.colormap)
 
     dem_filename = config.dem_url.split('/')[-1]
     dem_path = os.path.join(args.cachedir, dem_filename)
@@ -73,17 +75,17 @@ if __name__=="__main__":
 
     # Make TIN
     terrain = generate_tin.tin_from_grid(dem,
-                triangles_fraction=config.triangles_fraction, show=args.show)
+                                         triangles_fraction=config.triangles_fraction, show=args.show)
 
 
     # TODO: Check output format
     # Convert to JSON
     logger.info("Converting to json...")
     json, heightmap = export.terrain_to_json(terrain,
-                           vscale=config.vscale,
-                           hscale=config.hscale,
-                           colorfunc=getattr(colormaps, config.colormap),
-                           remove_edge_triangles=True)
+                                             vscale=config.vscale,
+                                             hscale=config.hscale,
+                                             colorfunc=colormap,
+                                             remove_edge_triangles=True)
 
     # Save JSON
     logger.info("Saving json...")
@@ -101,4 +103,10 @@ if __name__=="__main__":
     # Save heightmap
     heightmap_fn = scenery_fn+'-heightmap.png'
     export.heightmap_to_png(heightmap, heightmap_fn)
-    logger.info("Saved heightmap as %s", heightmap_fn)
+    jpgfn = export.img_to_jpg(heightmap_fn)
+    logger.info("Saved heightmap as %s and %s", heightmap_fn, jpgfn)
+
+    # Save overview to see terrain colors
+    overview_fn = scenery_fn+'-overview.png'
+    export.heightmap_to_overview(heightmap, overview_fn, config.colormap)
+    logger.info("Saved overview as %s", overview_fn)
