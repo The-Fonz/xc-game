@@ -1,10 +1,11 @@
 import isArray from 'lodash/isArray';
-import merge from 'lodash/merge';
+import mergeWith from 'lodash/mergeWith';
+import cloneDeep from 'lodash/cloneDeep';
 
 import {BASICCONFIG} from './basic-config';
 import * as missions from './missions';
 
-function customizer(objValue, srcValue) {
+function customizer(objValue, srcValue, key, object, source, stack) {
     // Do not merge arrays but overwrite them
     if (isArray(objValue)) {
         return srcValue;
@@ -18,7 +19,8 @@ for (let key in missions) {
     // Filter test configs in production
     if (!(ENV === 'production' && key.indexOf('test')!==-1)) {
         // Merge with standard config
-        let cfg = merge({}, BASICCONFIG, missions[key], customizer);
+        let cfg = cloneDeep(BASICCONFIG);
+        cfg = mergeWith(cfg, missions[key], customizer);
         configs.push(cfg);
     }
 }
