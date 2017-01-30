@@ -8,12 +8,13 @@ import {l} from "../utils";
 /** WebGL view */
 export class ThreeDeeView {
     /** Instantiate using engine, scenery, paraglider 3D models and config */
-    constructor(engine, sceneryjson, pgmodels, config) {
+    constructor(engine, sceneryjson, assets, config) {
         window.THREE = THREE;
         window.tdv = this;
 
         this.engine = engine;
         this.config = config;
+        this.assets = assets;
 
         this.state = {
             // Points to 0,0,0
@@ -62,7 +63,7 @@ export class ThreeDeeView {
             // Namespace the data we attach to the pg model
             pg.meta.view3d = {};
             //TODO: load different pgmeshes based on pg config, to have some variation
-            let pggeom = loader.parse(pgmodels[0]).geometry;
+            let pggeom = loader.parse(assets[0]).geometry;
             let pgmat  = new THREE.MeshStandardMaterial(
                 {color: 0x888888, side: THREE.DoubleSide, shading: THREE.FlatShading, roughness: 0.55, metalness: 0.2});
             pg.meta.view3d.mesh = new THREE.Mesh(pggeom, pgmat);
@@ -73,6 +74,34 @@ export class ThreeDeeView {
         this.applyConfig(config);
 
         document.body.appendChild( this.renderer.domElement );
+    }
+
+    /** Put trees on terrain */
+    initTrees() {
+        // TODO: Load different tree meshes based on config
+        let instance, x,y,z;
+        let topaxis = new THREE.Vector3(0,1,0);
+        let extentX = this.engine.terrain.extent[2];
+        let extentZ = this.engine.terrain.extent[3];
+        var loader = new THREE.JSONLoader();
+        let group = new THREE.Object3D();
+        let parsed = loader.parse(this.assets[1]);
+        let material = new THREE.MultiMaterial( parsed.materials );
+        let mesh = new THREE.Mesh( parsed.geometry, material );
+        for (let i=0; i<this.config.ntrees; i++) {
+            instance = mesh.clone();
+            let scale = 69;
+            instance.scale.set(scale,scale,scale);
+            function r(s) {return Math.random()*s;}
+            x = r(extentX);
+            z = r(extentZ);
+            y = this.engine.terrain.getHeightNumber(x,z);
+            instance.position.set(x,y,z);
+            instance.rotation.set(0,r(6),0);
+            l(`Instantiate tree at ${x} ${y} ${z}`);
+            group.add(instance);
+        }
+        this.scene.add(group);
     }
 
     /** Update cloud positions */

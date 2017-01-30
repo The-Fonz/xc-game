@@ -22,16 +22,16 @@ if (ENV === 'development') {
 function loadConfig(config) {
     // Load scenery
     let promises = [axios.get(config.scenery.url)];
-    // Add all different paraglider meshes to be loaded
-    let pgmlist = config.ThreeDeeView.pgmeshes;
-    for (let k in pgmlist) {
-        promises.push(axios.get(pgmlist[k]));
+    // Load pg meshes, trees etc.
+    let assets = config.ThreeDeeView.assets;
+    for (let k in assets) {
+        promises.push(axios.get(assets[k]));
     }
     return axios.all(promises).then((resps)=>{
         let terrainmodel = resps[0].data;
         // Extract data from axios response objects
-        let pgmodels = map(resps.slice(1), 'data');
-        let game = new Game(terrainmodel, pgmodels, config);
+        let assets = map(resps.slice(1), 'data');
+        let game = new Game(terrainmodel, assets, config);
         // Return game object
         return game;
     });
