@@ -1,9 +1,9 @@
 export let simpleTask = {
     name: "Simple task",
     slug: "simple-task",
-    thumbnail: "/resources/thumbnails/test-simple-task.png",
+    thumbnail: "resources/thumbnails/test-simple-task.png",
     scenery: {
-        url: "/resources/sceneries/grandcanyon/grandcanyon.json",
+        url: "resources/sceneries/grandcanyon/grandcanyon.json",
     },
     Engine: {
         paragliders: [

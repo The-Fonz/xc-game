@@ -3,7 +3,7 @@ export let salzburgSimple = {
     slug: "salzburg-simple",
     thumbnail: "",
     scenery: {
-        url: "/resources/sceneries/salzburg/salzburg.json",
+        url: "resources/sceneries/salzburg/salzburg.json",
     },
     Engine: {
         timeMultiplier: 20,

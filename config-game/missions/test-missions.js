@@ -3,7 +3,7 @@ export let testShowHeightmap = {
     slug: "test-show-heightmap",
     pgmeshes: null,
     scenery: {
-        url: "/resources/sceneries/grandcanyon/grandcanyon.json",
+        url: "resources/sceneries/grandcanyon/grandcanyon.json",
     },
     ThreeDeeView: {
         showheightmap: true,
