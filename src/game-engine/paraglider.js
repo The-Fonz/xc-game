@@ -129,15 +129,23 @@ export class Paraglider {
       let steeringSensitivity =
       this.performance[this.speedstate]['steeringSensitivity'];
       let steermultiplier = dt * steeringSensitivity;
-      let steer = Number(k.get('left')||0 - k.get('right')||0);
+      let steer = Number(k.get('left') - k.get('right'));
       this.heading += steermultiplier * steer;
       // Bank in radians
       this.bank = -steer*.07 * steeringSensitivity;
       // Now change speedstate
-      this.speedstate += Number(k.get('up')||0 - k.get('down')||0);
+      this.speedstate += Number(k.get('up') - k.get('down'));
       if (this.speedstate < 0) this.speedstate = 0;
       let l = this.performance.length;
-      if (this.speedstate >= l) this.speedstate = l-1;
+      if (this.speedstate >= l) {
+          // Cycle speedbar if using touch
+          if (k.get('touch')) {
+              this.speedstate = 0;
+          // Otherwise, just keep it at max
+          } else {
+              this.speedstate = l-1;
+          }
+      }
       // Depress keys
       k.reset('up');
       k.reset('down');
@@ -145,7 +153,7 @@ export class Paraglider {
       // Walk
       this.walk = k.get('up') - k.get('down');
       this.heading += dt * 8 *
-            Number(k.get('left')||0 - k.get('right')||0);
+            Number(k.get('left') - k.get('right'));
     }
   }
   /**

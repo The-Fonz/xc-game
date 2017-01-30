@@ -71,7 +71,11 @@ export class Controls {
       // Left third of screen
       if (x < w/3) this.set('left');
       // Middle third
-      else if (x < 2*w/3) this.set('up');
+      else if (x < 2*w/3) {
+        this.set('up');
+        // Easy hack to indicate that touch was used
+        this.set('touch');
+      }
       // Right third
       else this.set('right');
     } else if (type === "touchend" || type === "touchcancel") {
@@ -79,6 +83,7 @@ export class Controls {
       this.reset('up');
       this.reset('left');
       this.reset('right');
+      this.reset('touch');
     }
   }
 }
