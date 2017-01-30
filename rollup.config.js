@@ -25,7 +25,7 @@ let replaceConfig = {
 
 export default {
     entry: 'src/main.js',
-    dest: 'build/static/bundle.js',
+    dest: 'build/bundle.js',
     format: 'iife',
     plugins: [
         resolve(resolveConfig),
