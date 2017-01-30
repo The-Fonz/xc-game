@@ -1,10 +1,10 @@
 # Gets imported from terrainmaker colormaps module
-colormap = 'mpl_terrain'
+colormap = 'simple_snow'
 hscale = 30
-vscale = 3
+vscale = 1.5
 
 dem_url = "http://www.viewfinderpanoramas.org/dem1/N47E013.zip"
 
-slice_points = (2000,3601,2000,3601)
+slice_points = (100,3000,300,1000)
 
-triangles_fraction = .005
+triangles_fraction = .024
