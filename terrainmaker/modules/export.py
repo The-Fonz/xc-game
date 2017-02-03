@@ -4,6 +4,7 @@
 
 import os
 import json
+import struct
 import logging
 import numpy as np
 from PIL import Image
@@ -33,6 +34,22 @@ def heightmap_to_overview(heightmap, imgname, cm):
         # Pass only colormap name, make sure to register colormap
         cmap=cm)
     plt.savefig(imgname)
+
+
+def pts_to_binary(terrainfilter):
+    """
+    Save just the points to binary format, for use with a later
+    (constrained) delaunay triangulation step.
+    """
+    o = terrainfilter.outputs[0]
+    vertices = o.points.to_array()
+    out = bytearray()
+    for v in vertices:
+        v_s = np.uint16(v)
+        # Pack coordinates as big-endian 2-byte uints (short)
+        bytes = struct.pack('>HHH', v_s[0], v_s[1], v_s[2])
+        out.extend(bytes)
+    return out
 
 
 def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF,

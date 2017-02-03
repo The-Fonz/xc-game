@@ -26,7 +26,7 @@ from terrainmaker.modules import *
 # Set up cmdline arguments
 parser = argparse.ArgumentParser(description="Generate TIN terrain model")
 parser.add_argument('config', help='Config file name (e.g. "grandcanyon"')
-parser.add_argument('--show', '-s', default=False,
+parser.add_argument('--show', '-s', action="store_true", default=False,
                     help="Show mayavi output in separate window")
 parser.add_argument('--format', '-f', default='json',
                     help="Output format, default THREE.js JSON",
@@ -46,6 +46,13 @@ if __name__=="__main__":
     except ImportError:
         logger.error("Config %s not found in folder %s", args.config, config_folder)
         exit()
+
+    # Assume config file name is the same as scenery name
+    scenery_path = os.path.join(resource_scenery_folder, args.config)
+    if not os.path.isdir(scenery_path):
+        os.makedirs(scenery_path)
+        logger.info("Made scenery path %s", scenery_path)
+    scenery_fn = os.path.join(scenery_path, args.config)
 
     colormap = getattr(colormaps, config.colormap)
 
@@ -74,9 +81,14 @@ if __name__=="__main__":
     dem = dem[sp[0]:sp[1], sp[2]:sp[3]]
 
     # Make TIN
-    terrain = generate_tin.tin_from_grid(dem,
-                                         triangles_fraction=config.triangles_fraction, show=args.show)
+    terrain = generate_tin.tin_from_grid(dem, triangles_fraction=config.triangles_fraction, show=args.show)
 
+    # Save points in binary format
+    pts_binary_fn = scenery_fn + '-points.bytes'
+    pts_binary = export.pts_to_binary(terrain)
+    with open(pts_binary_fn, 'wb') as f:
+        f.write(pts_binary)
+    logger.info("Saved heightmap in binary format as %s", pts_binary_fn)
 
     # TODO: Check output format
     # Convert to JSON
@@ -89,12 +101,6 @@ if __name__=="__main__":
 
     # Save JSON
     logger.info("Saving json...")
-    # Assume config file name is the same as scenery name
-    scenery_path = os.path.join(resource_scenery_folder, args.config)
-    if not os.path.isdir(scenery_path):
-        os.makedirs(scenery_path)
-        logger.info("Made scenery path %s", scenery_path)
-    scenery_fn = os.path.join(scenery_path, args.config)
     scenery_json_fn = scenery_fn + '.json'
     with open(scenery_json_fn, 'w') as f:
         f.write(json)
