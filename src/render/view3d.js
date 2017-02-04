@@ -7,8 +7,9 @@ import {l} from "../utils";
 
 /** WebGL view */
 export class ThreeDeeView {
+    constructor() {}
     /** Instantiate using engine, scenery, paraglider 3D models and config */
-    constructor(engine, sceneryjson, assets, config) {
+    setConfig(engine, sceneryjson, assets, config) {
         window.THREE = THREE;
         window.tdv = this;
 
@@ -77,12 +78,12 @@ export class ThreeDeeView {
     }
 
     /** Put trees on terrain */
-    initTrees() {
+    initTrees(terrain) {
         // TODO: Load different tree meshes based on config
         let instance, x,y,z;
         let topaxis = new THREE.Vector3(0,1,0);
-        let extentX = this.engine.terrain.extent[2];
-        let extentZ = this.engine.terrain.extent[3];
+        let extentX = terrain.extent[2];
+        let extentZ = terrain.extent[3];
         var loader = new THREE.JSONLoader();
         let group = new THREE.Object3D();
         let parsed = loader.parse(this.assets[1]);
@@ -95,10 +96,10 @@ export class ThreeDeeView {
             function r(s) {return Math.random()*s;}
             x = r(extentX);
             z = r(extentZ);
-            y = this.engine.terrain.getHeightNumber(x,z);
+            y = terrain.getHeightNumber(x,z);
             instance.position.set(x,y,z);
             instance.rotation.set(0,r(6),0);
-            l(`Instantiate tree at ${x} ${y} ${z}`);
+            // l(`Instantiate tree at ${x} ${y} ${z}`);
             group.add(instance);
         }
         this.scene.add(group);
@@ -367,9 +368,9 @@ export class ThreeDeeView {
     }
 
     /** Put boxes at all heightmap points */
-    showHeightmap() {
+    showHeightmap(terrain) {
         // Makes
-        let t = this.engine.terrain;
+        let t = terrain;
 
         let boxsize = t.hscale;
         let hscale = t.hscale;

@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "http-server": "*",
+    "image-promise": "^4.0.1",
     "rollup-watch": "^3.2.2"
   },
   "private": true,

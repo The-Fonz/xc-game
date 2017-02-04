@@ -2,9 +2,8 @@
  * Shows main menu, can use location.hash shortcuts
  */
 
-// Import browser-friendly axios
+import loadImage from 'image-promise';
 import axios from 'axios/dist/axios';
-import map from 'lodash/map';
 import find from 'lodash/find';
 
 import {l} from './utils';
@@ -20,21 +19,16 @@ if (ENV === 'development') {
 }
 
 function loadConfig(config) {
-    // Load scenery
-    let promises = [axios.get(config.scenery.url)];
-    // Load pg meshes, trees etc.
-    let assets = config.ThreeDeeView.assets;
-    for (let k in assets) {
-        promises.push(axios.get(assets[k]));
+    let asset_promises = [loadImage(config.scenery.heightmap_url)];
+    asset_promises.push(axios.get(config.scenery.url).then(resp => resp.data));
+    for (let k in config.ThreeDeeView.assets) {
+        // Unpack resp.data right away
+        let p = axios.get(config.ThreeDeeView.assets[k]).
+                    then(resp => resp.data);
+        // TODO: Catch promise
+        asset_promises.push(p);
     }
-    return axios.all(promises).then((resps)=>{
-        let terrainmodel = resps[0].data;
-        // Extract data from axios response objects
-        let assets = map(resps.slice(1), 'data');
-        let game = new Game(terrainmodel, assets, config);
-        // Return game object
-        return game;
-    });
+    let game = new Game(asset_promises, config);
 }
 
 function showMenu() {

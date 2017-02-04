@@ -4,6 +4,8 @@ export let salzburgSimple = {
     thumbnail: "",
     scenery: {
         url: "resources/sceneries/salzburg/salzburg.json",
+        // TODO: Move heightmap url to scenery metadata?
+        heightmap_url: "resources/sceneries/salzburg/salzburg-heightmap.jpg"
     },
     Engine: {
         timeMultiplier: 20,

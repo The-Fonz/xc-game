@@ -2,6 +2,14 @@
  * Shows menu, has methods to show, hide etc.
  */
 
+const HIP_LOADING_MESSAGES = [
+    "Building mountains...",
+    "Retrieving vectors...",
+    "Generating triangles...",
+    "Planting trees...",
+    "Picking turnpoints...",
+    "Setting time interval...",
+];
 
 export class Menu {
 
@@ -24,8 +32,11 @@ export class Menu {
     _get_text() {
         return `${this.title} ${this.intro}`;
     }
-
+    /** Set css visibility attribute, or return visibility bool if no arg */
     visible(bool: Boolean) {
+        if (bool === undefined)
+            // Is probably visible if any other value than 'hidden'
+            return this.target.style.visibility === "hidden" ? false: true;
         this.target.style.visibility = bool ? "visible" : "hidden";
     }
 
@@ -52,7 +63,15 @@ export class Menu {
     }
 
     render_loading_mission(mission) {
-        this._render(`<div class="vcenter">Loading mission...</div>`);
+        let msg = () => {
+            if (!this.visible()) return;
+            // TODO: Random choice
+            let hipmsg = HIP_LOADING_MESSAGES[0];
+            this._render(`<div class="vcenter">${hipmsg}</div>`);
+            // Draw different message every second
+            window.setTimeout(msg, 2000);
+        };
+        msg();
     }
 
     render_playbtn(callback) {

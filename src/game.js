@@ -2,48 +2,98 @@
  * Game class
  */
 
-import {Terrain} from './game-engine/terrain';
-import {Engine} from './game-engine/engine';
-import {ThreeDeeView} from './render/view3d';
-import {Controls} from './game-engine/input';
+import axios from 'axios/dist/axios';
+
+import {Air} from './game-engine/air';
 import {Task} from './game-engine/task';
+import {Engine} from './game-engine/engine';
+import {Terrain} from './game-engine/terrain';
 import {TaskMap} from './overlays/taskmap';
+import {Controls} from './game-engine/input';
+import {ThreeDeeView} from './render/view3d';
+import {HeightmapLoader} from './loaders/heightmaploader';
 import {l} from './utils';
 
-/** Handles interaction between high-level game elements */
+/**
+ * Handles interaction between high-level game elements
+ */
 export class Game {
-    constructor(terrainmodel, assets, config){
-        // Load terrain, engine, view (in that order)
-        var km = new Controls();
-        l("Building mountains...");
-        var t = new Terrain(terrainmodel.xcgame.heightmap,
-            terrainmodel.xcgame.hscale,
-            // Vertical scale of terrain mesh
-            terrainmodel.xcgame.vscale,
-            // Heightmap multiplier, excludes vscale
-            terrainmodel.xcgame.heightmapvscale);
-        l("Retrieving vectors...");
-        var e = new Engine(t, config.Engine);
-        e.initAir(config.Air);
-        if (config.VarioTone) e.initVarioTone(config.VarioTone);
-        if (config.Dash) e.initDash(config.Dash);
-        l("Generating triangles...");
-        var v = new ThreeDeeView(e, terrainmodel, assets, config.ThreeDeeView);
+    /**
+     * Gets passed asset load promises so it can instantiate modules asynchronously.
+     */
+    constructor(asset_promises, config){
+        this.config = config;
+        let loadPromises = [];
+        let p;
 
-        l("Planting trees...");
-        v.initTrees();
+        // Instantiate all classes
+        this.heightmaploader = new HeightmapLoader();
+        this.controls = new Controls();
+        this.engine = new Engine();
+        this.air = new Air();
+        this.threedeeview = new ThreeDeeView();
+        this.terrain = new Terrain();
 
-        l("Picking turnpoints...");
-        let task = null;
-        let taskMap = null;
+        // Set config where needed
+        this.engine.setConfig(config.Engine);
+        this.air.setConfig(config.Air);
+
         if (config.Task) {
-            task = new Task();
-            task.init(config.Task);
-            taskMap = new TaskMap();
-            taskMap.init(task);
+            this.task = new Task();
+            this.task.init(config.Task);
+            this.taskMap = new TaskMap();
+            this.taskMap.init(this.task);
         }
 
-        l("Setting time interval...");
+        if (config.VarioTone) this.engine.initVarioTone(config.VarioTone);
+        if (config.Dash) this.engine.initDash(config.Dash);
+
+        // Heightmap
+        p = asset_promises[0].then((heightmapimg) => {
+            let hm_1d_array = this.heightmaploader.loadImg(heightmapimg);
+            let hm_2d_array = [];
+            let i_1d = 0;
+            for (let j=0; j<heightmapimg.height; j++) {
+                let a = [];
+                for (let i=0; i<heightmapimg.width; i++) {
+                    a.push(hm_1d_array[i_1d]);
+                    i_1d++;
+                }
+                hm_2d_array.push(a);
+            }
+            // TODO: Get proper metadata
+            // TODO: load heightmaparray
+            this.terrain.setHeightmap(hm_2d_array);
+            return true;
+        });
+        loadPromises.push(p);
+
+
+        // Terrainmodel, assets
+        p = axios.all(asset_promises.slice(1))
+            .then((assets) => {
+            this.terrain.setScale(assets[0].xcgame.hscale, assets[0].xcgame.vscale, assets[0].xcgame.heightmapvscale);
+            this.threedeeview.setConfig(this.engine, assets[0], assets.slice(1), config.ThreeDeeView);
+            this.threedeeview.initTrees(this.terrain);
+            return true;
+        });
+        loadPromises.push(p);
+
+        // Start rendering when all game modules have loaded
+        // TODO: Other method than axios?
+        axios.all(loadPromises).then(() => {
+            // Instantiate thermals
+            // TODO: do terrain extent calc in terrain metadata load, and increment thermals there
+            this.air.incrementAir(this.terrain);
+            this.startRenderloop();
+        });
+    }
+    /* Used to blur/pause simulation */
+    setBlur(bool: Boolean) {
+        // Replace null/NaN/0 etc. with false
+        this.blur = bool || false;
+    }
+    startRenderloop() {
         this.blur = false;
         // requestAnimationFrame only runs when tab is active
         // Handle blur/focus event to stop simulation
@@ -59,6 +109,7 @@ export class Game {
 
         var time = 0;
         let firsttime = true;
+
         let renderloop = (timestamp) => {
             if (time===0) time = timestamp;
 
@@ -67,40 +118,36 @@ export class Game {
             // Run at least once, even when blurred from start
             if (this.blur === false || firsttime) {
                 firsttime = false;
-                if (assets) {
-                    e.paragliders[0].input(dt, km);
-                    v.updatePg();
-                    v.updateShadow(e.paragliders[0]);
-                    v.updateClouds(e.air);
-                    if (task) {
-                        if (task.update(e.paragliders[0].pos)) {
+                // TODO: Make better check for actual players
+                if (this.engine.paragliders.length) {
+                    this.engine.paragliders[0].input(dt, this.controls);
+                    this.threedeeview.updatePg();
+                    this.threedeeview.updateShadow(this.engine.paragliders[0]);
+                    this.threedeeview.updateClouds(this.air);
+                    if (this.task) {
+                        if (this.task.update(this.engine.paragliders[0].pos)) {
 
                         }
                     }
-                    if (taskMap) taskMap.update(e.paragliders[0]);
+                    if (this.taskMap) this.taskMap.update(this.engine.paragliders[0]);
                 }
                 // Switch camera
-                if (config.ThreeDeeView.cameras.length > 1) {
-                    if (km.get("spacebar")) {
-                        km.reset("spacebar");
-                        v.nextCam();
+                if (this.config.ThreeDeeView.cameras.length > 1) {
+                    if (this.controls.get("spacebar")) {
+                        this.controls.reset("spacebar");
+                        this.threedeeview.nextCam();
                     }
-                    v.cam(km, dt, e.paragliders[0]);
-                    e.update(dt);
+                    this.threedeeview.cam(this.controls,
+                                          dt,
+                                          this.engine.paragliders[0]);
+                    this.engine.update(this.terrain, this.air, dt);
                 }
-                // l("animating");
-                v.render();
+                this.threedeeview.render();
             }
 
             requestAnimationFrame(renderloop);
             time = timestamp;
         }
-
         requestAnimationFrame(renderloop);
-    }
-    /* Used to blur/pause simulation */
-    setBlur(bool: Boolean) {
-        // Replace null/NaN/0 etc. with false
-        this.blur = bool || false;
     }
 }
