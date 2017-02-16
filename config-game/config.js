@@ -17,7 +17,7 @@ let configs = [];
 
 for (let key in missions) {
     // Filter test configs in production
-    if (!(ENV === 'production' && key.indexOf('test')!==-1)) {
+    if (!(process.env.NODE_ENV === 'production' && key.indexOf('test')!==-1)) {
         // Merge with standard config
         let cfg = cloneDeep(BASICCONFIG);
         cfg = mergeWith(cfg, missions[key], customizer);

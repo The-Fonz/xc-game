@@ -14,7 +14,7 @@ import {Menu} from './overlays/menu';
 import {configs} from '../config-game/config';
 import {title, introtext} from '../config-game/text';
 
-if (ENV === 'development') {
+if (process.env.NODE_ENV === 'development') {
     l("Compiled in DEV mode");
 }
 
@@ -28,7 +28,9 @@ function loadConfig(config) {
         // TODO: Catch promise
         asset_promises.push(p);
     }
-    let game = new Game(asset_promises, config);
+    let game = new Game();
+    // Returns promise
+    return game.init(asset_promises, config);
 }
 
 function showMenu() {

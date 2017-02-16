@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "build": "npm-run-all --parallel build:*",
-    "watch:js": "rollup -c --environment NODE_ENV:development --watch --sourcemap inline",
-    "build:js": "rollup -c",
+    "watch:js": "NODE_ENV=development watchify -v --debug src/main.js -o bundle.js -t envify -t babelify",
+    "build:js": "NODE_ENV=production rollup -c",
     "serve": "http-server -c-1",
     "serve:docs": "documentation serve src/main.js",
     "dev": "npm-run-all --parallel watch:js serve"
@@ -31,5 +31,11 @@
     "rollup-watch": "^3.2.2"
   },
   "private": true,
-  "license": "GPLV2"
+  "license": "GPLV2",
+  "babel": {
+    "presets": [
+      ["es2015"]
+    ],
+    "plugins": ["transform-flow-strip-types"]
+  }
 }

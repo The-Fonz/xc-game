@@ -18,10 +18,11 @@ import {l} from './utils';
  * Handles interaction between high-level game elements
  */
 export class Game {
+    constructor() {}
     /**
      * Gets passed asset load promises so it can instantiate modules asynchronously.
      */
-    constructor(asset_promises, config){
+    init(asset_promises, config){
         this.config = config;
         let loadPromises = [];
         let p;
@@ -80,12 +81,13 @@ export class Game {
         loadPromises.push(p);
 
         // Start rendering when all game modules have loaded
-        // TODO: Other method than axios?
-        axios.all(loadPromises).then(() => {
+        return axios.all(loadPromises).then(() => {
             // Instantiate thermals
             // TODO: do terrain extent calc in terrain metadata load, and increment thermals there
             this.air.incrementAir(this.terrain);
             this.startRenderloop();
+            // Return game object to promise receiver
+            return this;
         });
     }
     /* Used to blur/pause simulation */

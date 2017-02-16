@@ -5,6 +5,8 @@ import commonjs from 'rollup-plugin-commonjs';
 import replace from 'rollup-plugin-replace';
 
 let babelConfig = {
+    // Ignore .babelrc that might contain module transformer
+    "babelrc": false,
     "exclude": 'node_modules/**',
     "presets": [
         ["es2015", {"modules": false}],
@@ -20,7 +22,7 @@ let resolveConfig = {
 
 let replaceConfig = {
     exclude: 'node_modules/**',
-    ENV: JSON.stringify(process.env.NODE_ENV || 'production'),
+    "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV || 'production'),
 };
 
 export default {

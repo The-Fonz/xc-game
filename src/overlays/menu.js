@@ -2,6 +2,8 @@
  * Shows menu, has methods to show, hide etc.
  */
 
+import random from 'lodash/random';
+
 const HIP_LOADING_MESSAGES = [
     "Building mountains...",
     "Retrieving vectors...",
@@ -64,12 +66,14 @@ export class Menu {
 
     render_loading_mission(mission) {
         let msg = () => {
-            if (!this.visible()) return;
-            // TODO: Random choice
-            let hipmsg = HIP_LOADING_MESSAGES[0];
+            // Stop if start button shown
+            if (this.readyToPlay) return;
+            // Random choice from hip messages
+            let randindex = random(0, HIP_LOADING_MESSAGES.length);
+            let hipmsg = HIP_LOADING_MESSAGES[randindex];
             this._render(`<div class="vcenter">${hipmsg}</div>`);
             // Draw different message every second
-            window.setTimeout(msg, 2000);
+            window.setTimeout(msg, 1000);
         };
         msg();
     }
@@ -78,6 +82,7 @@ export class Menu {
         this._render(`<button class="vcenter" id="menu-start-button">Play</button>`);
         document.getElementById("menu-start-button").
                  addEventListener('click', callback);
+        this.readyToPlay = true;
     }
 
 }
