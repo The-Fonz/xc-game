@@ -86,6 +86,7 @@ export class Game {
             // TODO: do terrain extent calc in terrain metadata load, and increment thermals there
             this.air.incrementAir(this.terrain);
             this.startRenderloop();
+            this.initResizeListener();
             // Return game object to promise receiver
             return this;
         });
@@ -94,6 +95,17 @@ export class Game {
     setBlur(bool: Boolean) {
         // Replace null/NaN/0 etc. with false
         this.blur = bool || false;
+    }
+    initResizeListener() {
+        window.addEventListener('resize', ()=>{
+            // Use body w,h instead of window.innerHeight to account for
+            // e.g. dev panel (would render squished)
+            let [w,h] = [document.body.offsetWidth,
+                         document.body.offsetHeight];
+            this.threedeeview.resize(w,h);
+            if (this.taskMap) this.taskMap.resize(w,h);
+            if (this.dash) this.dash.resize(w,h);
+        }, false);
     }
     startRenderloop() {
         this.blur = false;

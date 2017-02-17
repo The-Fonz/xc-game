@@ -34,7 +34,7 @@ export class TaskMap {
      */
     constructor() {
         let appendTo = document.getElementById("overlays") ||
-                        document.body;
+            document.body;
         let elem = document.createElement("div");
         elem.innerHTML = TASK_MAP_TEMPLATE;
         appendTo.appendChild(elem);
@@ -59,6 +59,10 @@ export class TaskMap {
             width: this.width*2,
         });
         this._draw();
+    }
+    /** Window resize */
+    resize(w,h) {
+        // TODO: recalculate size of map
     }
     /** Convert from world to svg coordinates */
     tox(x) {

@@ -77,6 +77,13 @@ export class ThreeDeeView {
         document.body.appendChild( this.renderer.domElement );
     }
 
+    /** Resize canvas */
+    resize(w,h) {
+        this.camera.aspect = w/h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(w,h);
+    }
+
     /** Put trees on terrain */
     initTrees(terrain) {
         // TODO: Load different tree meshes based on config
