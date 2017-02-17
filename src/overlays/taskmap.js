@@ -2,7 +2,7 @@
  * TaskView class
  */
 
-import {l} from '../utils/logging';
+import {l} from '../utils';
 
 const TASK_MAP_TEMPLATE = `
 <style type="text/css">

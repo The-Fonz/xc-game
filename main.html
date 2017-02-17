@@ -1,0 +1,85 @@
+<html>
+<head>
+    <meta charset=utf-8>
+    <title>xc-game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <style>
+        body {
+            margin: 0;
+            font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+        }
+        canvas { width: 100%; height: 100% }
+        #menu {
+            position: fixed;
+            left: 10%;
+            top: 10%;
+            width: 80%;
+            height: 80%;
+            overflow: auto;
+            background: rgba(245, 245, 220, .8);
+        }
+        /* All menu children */
+        #menu > * {
+            text-align: center;
+            margin: 0 auto;
+        }
+        /* Title */
+        .title {
+            font-variant: small-caps;
+            font-size: 2em;
+            padding: 30px 0 0 0;
+        }
+        /* Intro text */
+        .intro {
+            padding: 20px 8% 20px 8%;
+            max-width: 850px;
+        }
+        .vcenter {
+            position: relative;
+            margin: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        button#menu-start-button {
+            cursor: pointer;
+            display: block;
+            color: white;
+            background: lawngreen;
+            border: none;
+            padding: 15px 45px;
+            font-size: 2em;
+        }
+        /* Functions as flexbox container */
+        .missionlist {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .mission {
+            height: 200px;
+            width: 300px;
+            margin: 20px;
+            /* We might use a background thumbnail if available */
+            background-color: antiquewhite;
+            background-position: center center;
+            background-size: cover;
+        }
+        .mission:hover {
+            cursor: pointer;
+        }
+        .mission .overlay-title {
+            background: rgba(255,255,255,.8);
+            margin: 0 20px;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body id="main">
+<div id="overlays"></div>
+<div id="menu">
+    <div class="vcenter">Loading...</div>
+</div>
+
+<script src="bundle.js"></script>
+</body>
+</html>
