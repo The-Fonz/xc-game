@@ -1,6 +1,6 @@
-export let simpleTask = {
+export let testSimpleTask = {
     name: "Simple task",
-    slug: "simple-task",
+    slug: "test-simple-task",
     thumbnail: "resources/thumbnails/test-simple-task.png",
     scenery: {
         url: "resources/sceneries/grandcanyon/grandcanyon.json",
