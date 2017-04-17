@@ -56,6 +56,7 @@ export class Terrain {
         } catch (e) {
             // Out of map area
             console.error("getHeight: out of map area");
+            console.error(e);
             return NaN;
         }
     }

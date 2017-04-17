@@ -36,13 +36,11 @@ def heightmap_to_overview(heightmap, imgname, cm):
     plt.savefig(imgname)
 
 
-def pts_to_binary(terrainfilter):
+def pts_to_binary(vertices):
     """
     Save just the points to binary format, for use with a later
     (constrained) delaunay triangulation step.
     """
-    o = terrainfilter.outputs[0]
-    vertices = o.points.to_array()
     out = bytearray()
     for v in vertices:
         v_s = np.uint16(v)
@@ -52,9 +50,7 @@ def pts_to_binary(terrainfilter):
     return out
 
 
-def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF,
-                    hscale=1, vscale=1,
-                    remove_edge_triangles=True):
+def terrainfilter_clean(terrainfilter):
     o = terrainfilter.outputs[0]
     vertices = o.points.to_array()
     # Contains leading 3's for each triangle
@@ -72,29 +68,27 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF,
     vertices[:,2] -= vertices[:,2].min()
 
     faces = faces.reshape((len(faces)//4, 4))
-    # Triangle with face color, see three.js json version 3 format
-    faces[:,0] = 0b01000000
 
-    # Generate colors with avg elevation of face
-    gety = lambda vi: vertices[vi,1]
-    # Not barycentric but avg y-coord of two extreme pts in y-direction,
-    # I think this will look better
-    avg = lambda y1,y2,y3: (max(y1,y2,y3)+min(y1,y2,y3))/2
-    avgelevs = [avg(gety(f[1]),gety(f[2]),gety(f[3])) for f in faces]
-    # Normalize to range [0,1]
-    avgelevs -= min(avgelevs)
-    avgelevs /= max(avgelevs)
-    colors = [ colorfunc(elev) for elev in avgelevs]
+    # Remove first column
 
-    colorindices = np.arange(len(faces))
-    # avoid shape mismatch error
-    colorindices.shape = (len(faces), 1)
 
-    faces = np.concatenate((faces, colorindices), axis=1)
     faces = faces.flatten()
     faces = faces.astype(int)
 
 
+    # Check if we can safely convert to int
+    # to avoid storing ".0" when it's printed as float
+    if np.any(vertices % 1):
+        raise Warning("Not all vertices are ints")
+    vertices = vertices.flatten().astype(np.int)
+
+    return vertices, faces
+
+
+def remove_edge_triangles(vertices, faces):
+    """
+    Removes faces close to edge, they are usually very narrow due to delaunay constraints.
+    """
     xmin = vertices[:,0].min()
     xmax = vertices[:,0].max()
     zmin = vertices[:,2].min()
@@ -107,50 +101,68 @@ def terrain_to_json(terrainfilter, colorfunc=lambda x: 0xFFFFFF,
         return 0
 
     # Edge triangles are often very narrow due to delaunay constraint failing
-    if remove_edge_triangles:
-        logger.info("Removing edge triangles...")
-        oldfaces = faces.copy()
-        # Output only 8 log messages
-        log_i = oldfaces.shape[0] // 8
-        faces = np.ndarray(faces.shape)
-        i = 0
-        for t,v1,v2,v3,c in oldfaces.reshape(faces.shape[0]//5, 5):
-            # Must have two edge vertices to be on an edge
-            if (is_edge_triangle(v1) +
-                is_edge_triangle(v2) +
-                is_edge_triangle(v3)) < 2:
-                faces[i:i+5] = [t,v1,v2,v3,c]
-                i += 5
-            if not i % log_i:
-                logger.info("Processed %d out of %s faces", i//5, len(faces)//5)
-        logger.info("Removed %d edge faces", (oldfaces.shape[0]-i)//5)
-        # faces is shorter than oldfaces, resize in-place
-        faces.resize(i)
+    oldfaces = faces.copy()
+    # Output only 8 log messages
+    log_i = oldfaces.shape[0] // 8
+    faces = np.ndarray(faces.shape)
+    i = 0
+    for v1,v2,v3 in oldfaces.reshape(faces.shape[0]//3, 3):
+        # Must have two edge vertices to be on an edge
+        if (is_edge_triangle(v1) +
+            is_edge_triangle(v2) +
+            is_edge_triangle(v3)) < 2:
+            faces[i:i+5] = [v1,v2,v3]
+            i += 3
+        if not i % log_i:
+            logger.info("Processed %d out of %s faces", i//5, len(faces)//5)
+    logger.info("Removed %d edge faces", (oldfaces.shape[0]-i)//5)
+    # faces is shorter than oldfaces, resize in-place
+    faces.resize(i)
+    return faces
 
-    heightmap = delaunay_to_heightmap(vertices, faces)
+
+def colors(vertices, faces, colorfunc=lambda x: 0xFFFFFF):
+    # Generate colors with avg elevation of face
+    gety = lambda vi: vertices[vi, 1]
+    # Not barycentric but avg y-coord of two extreme pts in y-direction,
+    # I think this will look better
+    avg = lambda y1, y2, y3: (max(y1, y2, y3) + min(y1, y2, y3)) / 2
+    avgelevs = [avg(gety(f[1]), gety(f[2]), gety(f[3])) for f in faces]
+    # Normalize to range [0,1]
+    avgelevs = (avgelevs - min(avgelevs)) / max(avgelevs)
+    colors = [colorfunc(elev) for elev in avgelevs]
+    return colors
+
+
+def to_three_json(vertices, faces, heightmap_url='',
+                  hscale=1, vscale=1, colors=None):
+
+    # Add type
+    # Triangle with face color, see three.js json version 3 format
+    faces[:, 0] = 0b01000000
+
     # Normalize heightmap to 0-255 and remember vscale to resize later
     heightmapvscale = heightmap.max() / 255
     logger.info("heightmapvscale {:.2f}".format(heightmapvscale))
     heightmap /= heightmapvscale
     heightmap = heightmap.round()
 
-    # Check if we can safely convert to int
-    # to avoid storing ".0" when it's printed as float
-    if np.any(vertices % 1):
-        raise Warning("Not all vertices are ints")
-    vertices = vertices.flatten().astype(np.int)
+    colorindices = np.arange(len(faces))
+    # avoid shape mismatch error
+    colorindices.shape = (len(faces), 1)
+
+    faces = np.concatenate((faces, colorindices), axis=1)
 
     o = {
         # Special xcgame metadata
         "xcgame": {
-            # Unencoded heightmap
-            "heightmap": heightmap.tolist(),
+            "heightmap_url": heightmap_url,
             "heightmapvscale": heightmapvscale,
             # hscale is the same for heightmap and geometry
             "hscale": float(hscale),
             "vscale": float(vscale),
         },
-        # From here it's all standard Tthreejs JSON format
+        # From here it's all standard Threejs JSON format
         "metadata": { "formatVersion" : 3 },
 
         "scale": 1.0,

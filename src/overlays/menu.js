@@ -68,8 +68,8 @@ export class Menu {
         let msg = () => {
             // Stop if start button shown
             if (this.readyToPlay) return;
-            // Random choice from hip messages
-            let randindex = random(0, HIP_LOADING_MESSAGES.length);
+            // Random choice from hip messages, endpoints inclusive
+            let randindex = random(0, HIP_LOADING_MESSAGES.length-1);
             let hipmsg = HIP_LOADING_MESSAGES[randindex];
             this._render(`<div class="vcenter">${hipmsg}</div>`);
             // Draw different message every second

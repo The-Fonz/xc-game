@@ -28,9 +28,6 @@ parser = argparse.ArgumentParser(description="Generate TIN terrain model")
 parser.add_argument('config', help='Config file name (e.g. "grandcanyon"')
 parser.add_argument('--show', '-s', action="store_true", default=False,
                     help="Show mayavi output in separate window")
-parser.add_argument('--format', '-f', default='json',
-                    help="Output format, default THREE.js JSON",
-                    choices=('json',))
 parser.add_argument('--cachedir',
                     default=os.path.join(parent_folder, 'resources', 'DEM_CACHE'),
                     help="Directory to cache DEM files")
@@ -83,6 +80,8 @@ if __name__=="__main__":
     # Make TIN
     terrain = generate_tin.tin_from_grid(dem, triangles_fraction=config.triangles_fraction, show=args.show)
 
+    vertices, faces = export.terrainfilter_clean(terrain)
+
     # Save points in binary format
     pts_binary_fn = scenery_fn + '-points.bytes'
     pts_binary = export.pts_to_binary(terrain)
@@ -90,10 +89,28 @@ if __name__=="__main__":
         f.write(pts_binary)
     logger.info("Saved heightmap in binary format as %s", pts_binary_fn)
 
-    # TODO: Check output format
+    # TODO: Save metadata for binary format (hscale, vscale, colors)
+
+    # Generate heightmap
+    heightmap = delaunay_to_heightmap(vertices, faces)
+
+    # Save heightmap
+    heightmap_fn = scenery_fn+'-heightmap.png'
+    export.heightmap_to_png(heightmap, heightmap_fn)
+    heightmap_jpg_fn = export.img_to_jpg(heightmap_fn)
+    heightmap_url = 'resources/sceneries/{}/{}'.format(args.config,
+                                                      os.path.basename(heightmap_jpg_fn))
+    logger.info("Saved heightmap as %s and %s, generated url as %s",
+                heightmap_fn, heightmap_jpg_fn, heightmap_url)
+
+    # Save overview to see terrain colors
+    overview_fn = scenery_fn+'-overview.png'
+    export.heightmap_to_overview(heightmap, overview_fn, config.colormap)
+    logger.info("Saved overview as %s", overview_fn)
+
     # Convert to JSON
     logger.info("Converting to json...")
-    json, heightmap = export.terrain_to_json(terrain,
+    json = export.to_three_json(vertices, faces, heightmap_url,
                                              vscale=config.vscale,
                                              hscale=config.hscale,
                                              colorfunc=colormap,
@@ -105,14 +122,3 @@ if __name__=="__main__":
     with open(scenery_json_fn, 'w') as f:
         f.write(json)
     logger.info("Saved json as %s", scenery_json_fn)
-
-    # Save heightmap
-    heightmap_fn = scenery_fn+'-heightmap.png'
-    export.heightmap_to_png(heightmap, heightmap_fn)
-    jpgfn = export.img_to_jpg(heightmap_fn)
-    logger.info("Saved heightmap as %s and %s", heightmap_fn, jpgfn)
-
-    # Save overview to see terrain colors
-    overview_fn = scenery_fn+'-overview.png'
-    export.heightmap_to_overview(heightmap, overview_fn, config.colormap)
-    logger.info("Saved overview as %s", overview_fn)

@@ -1,4 +1,7 @@
 # xc-game
+
+TODO: Update readme, it's outdated.
+
 Hey there, welcome to my pet project!
 
 This readme describes the idea of the game and gives some instructions on playing and developing. Description of algorithms is in the code docs, accessible with `npm run serve:docs` (I'll put them online at some point too).
